@@ -1,9 +1,30 @@
 import { toGame } from './toGame'
-import type { Game } from './types'
+import type { Game, GameStatus } from './types'
 
 const MAX_PAGES = 20
 
 export const GAME_SLUG: RegExp = /^nfl-[a-z]{2,4}-[a-z]{2,4}-\d{4}-\d{2}-\d{2}$/
+
+const GAME_STATUS_ORDER: Record<GameStatus, number> = Object.freeze({
+  LIVE: 0,
+  PENDING: 1,
+  ENDED: 2,
+})
+
+function getStartTimeOrInfinity(game: Game): number {
+  return game.startTime === null ? Infinity : Date.parse(game.startTime)
+}
+function sortByStatusThenStartTime(a: Game, b: Game) {
+  const diff = GAME_STATUS_ORDER[a.status] - GAME_STATUS_ORDER[b.status]
+  if (diff !== 0) return diff
+  // use startTime as tie breaker
+  const aStartTime = getStartTimeOrInfinity(a)
+  const bStartTime = getStartTimeOrInfinity(b)
+  // handles the case where both times are Infinity
+  if (aStartTime === bStartTime) return 0
+  // return aStartTime - bStartTime
+  return aStartTime < bStartTime ? -1 : 1
+}
 
 function pageUrl(offset: number) {
   return `https://gamma-api.polymarket.com/events?tag_slug=nfl&active=true&closed=false&limit=100&offset=${offset}`
@@ -34,7 +55,7 @@ export async function fetchGames(
       throw new Error("gamma API didn't return a list")
     }
     if (pageEvents.length < 1) {
-      return [...gamesCollection.values()]
+      return [...gamesCollection.values()].toSorted(sortByStatusThenStartTime)
     }
     const games = pageEvents
       .map((event) => toGame(event))

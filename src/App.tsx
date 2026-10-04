@@ -4,6 +4,7 @@ import type { Game } from './gamma/types'
 
 function App() {
   const [games, setGames] = useState<Game[] | null>(null)
+  const [selectedId, setSelectedId] = useState<string | null>(null)
 
   useEffect(() => {
     const controller = new AbortController()
@@ -26,6 +27,8 @@ function App() {
     }
   }, [])
 
+  const selected = games?.find((game) => game.id === selectedId) ?? null
+  console.log(selected)
   return (
     <main>
       <h1>NFL markets</h1>
@@ -38,9 +41,46 @@ function App() {
             <h2>Games: {games.length}</h2>
             <ul>
               {games?.map((e) => (
-                <li key={e.id}>{e.title}</li>
+                <li key={e.id}>
+                  <button type="button" onClick={() => setSelectedId(e.id)}>
+                    {e.title}
+                  </button>
+                </li>
               ))}
             </ul>
+            {selected !== null && (
+              <>
+                <table>
+                  <caption>{selected.title}</caption>
+                  <thead>
+                    <tr>
+                      <th scope="col">Outcome</th>
+                      <th scope="col">Best bid</th>
+                      <th scope="col">Best ask</th>
+                      <th scope="col">Last traded</th>
+                      <th scope="col">Spread</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {selected.rows &&
+                      selected.rows.map((row) => (
+                        <tr key={row.tokenId}>
+                          <th scope="row">
+                            <span>{row.question}</span>{' '}
+                            <span>{row.outcome}</span>
+                          </th>
+                        </tr>
+                      ))}
+                  </tbody>
+                </table>
+                {selected.inactiveMarketCount > 0 && (
+                  <p>
+                    {selected?.inactiveMarketCount} O/U lines are listed but not
+                    open yet
+                  </p>
+                )}
+              </>
+            )}
           </>
         )}
       </section>

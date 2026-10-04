@@ -83,3 +83,18 @@ test('fetch throws when it is aborted', async () => {
   ).rejects.toThrow()
   expect(gamma.offsets).toEqual([])
 })
+
+test('keeps only the games, upcoming by kickoff and finished last', async () => {
+  const gamma = fakeGamma([events.slice(0, 6), events.slice(6)])
+
+  const games = await fetchGames({ fetchFn: gamma.fetchFn })
+
+  expect(games.map((game) => game.slug)).toEqual([
+    'nfl-pit-cle-2026-10-02',
+    'nfl-den-sf-2026-10-04',
+    'nfl-chi-gb-2026-10-11',
+    'nfl-ne-chi-2026-10-23',
+    'nfl-nyg-hou-2026-10-25',
+    'nfl-sea-was-2026-09-27',
+  ])
+})
