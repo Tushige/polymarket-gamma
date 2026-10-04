@@ -1,11 +1,13 @@
 import { useId } from 'react'
 import type { Game } from '../gamma/types'
+import { useLiveQuotes } from '../feed/live'
 
 interface MarketTableProps {
   game: Game
 }
 export function MarketTable({ game }: MarketTableProps) {
   const titleId = useId()
+  useLiveQuotes(game.rows.map((row) => row.tokenId))
   return (
     <div className="market-panel">
       <h2 id={titleId} className="market-title">
