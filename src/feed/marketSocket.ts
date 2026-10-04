@@ -12,6 +12,8 @@ export interface MarketSocket {
 }
 /**
  * The first frame sent must be a subscription. Anything else gets back a 1008
+ *
+ * "connecting" state is when socket !== null and isOpen === false
  */
 export function createMarketSocket(options: MarketSocketOptions): MarketSocket {
   const {
@@ -84,6 +86,9 @@ export function createMarketSocket(options: MarketSocketOptions): MarketSocket {
         send({ operation: 'unsubscribe', assets_ids: tokenIds })
       }
     },
+    /**
+     * can only be called when the page is torn down, not between component remounts.
+     */
     close() {
       assetIds.clear()
       socket?.close()

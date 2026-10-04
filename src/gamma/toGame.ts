@@ -1,3 +1,4 @@
+import { isRecord } from '../utils'
 import { GAME_SLUG } from './fetchGames'
 import type { Game, GameStatus, Row } from './types'
 
@@ -119,8 +120,4 @@ export function toGame(event: unknown): Game | null {
     game.rows.push(...totalLineRows.map((lineRow) => lineRow.rows).flat())
   }
   return game
-}
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return !!value && typeof value === 'object'
 }
