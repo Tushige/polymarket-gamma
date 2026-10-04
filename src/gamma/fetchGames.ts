@@ -32,6 +32,7 @@ function pageUrl(offset: number) {
 export interface FetchGameOptions {
   fetchFn?: typeof fetch
   signal?: AbortSignal
+  onProgress?: (eventsScanned: number) => void
 }
 
 /**
@@ -40,7 +41,7 @@ export interface FetchGameOptions {
 export async function fetchGames(
   options: FetchGameOptions = {},
 ): Promise<Game[]> {
-  const { fetchFn = fetch, signal } = options
+  const { fetchFn = fetch, signal, onProgress } = options
 
   let offset = 0
 
@@ -63,6 +64,7 @@ export async function fetchGames(
 
     games.forEach((game) => gamesCollection.set(game.id, game))
     offset += pageEvents.length
+    onProgress?.(offset)
   }
   throw new Error(
     `Gamma still returned active pages after ${MAX_PAGES} pages. Increase your page limit.`,

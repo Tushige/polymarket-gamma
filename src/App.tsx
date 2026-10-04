@@ -1,90 +1,54 @@
-import { useEffect, useState } from 'react'
-import { fetchGames } from './gamma/fetchGames'
-import type { Game } from './gamma/types'
+import { useState } from 'react'
+import { useGames } from './gamma/useGames'
+import { GamePicker } from './ui/GamePicker'
+import { MarketTable } from './ui/MarketTable'
 
 function App() {
-  const [games, setGames] = useState<Game[] | null>(null)
+  const { state, retry } = useGames()
   const [selectedId, setSelectedId] = useState<string | null>(null)
 
-  useEffect(() => {
-    const controller = new AbortController()
-    const { signal } = controller
-    fetchGames({ signal })
-      .then((games) => {
-        if (signal.aborted) return
-        setGames(games)
-      })
-      .catch((err: Error) => {
-        console.log(err)
-        if (err.name === 'AbortError') {
-          console.log('Stale fetchGames request successfully aborted')
-        } else {
-          console.error(err)
-        }
-      })
-    return () => {
-      controller.abort()
-    }
-  }, [])
-
+  const games = state.status === 'ready' ? state.games : []
   const selected = games?.find((game) => game.id === selectedId) ?? null
-  console.log(selected)
+
   return (
-    <main>
-      <h1>NFL markets</h1>
-      <p>Live prices from Polymarket</p>
-      <section>
-        {games === null ? (
-          'Loading...'
-        ) : (
-          <>
-            <h2>Games: {games.length}</h2>
-            <ul>
-              {games?.map((e) => (
-                <li key={e.id}>
-                  <button type="button" onClick={() => setSelectedId(e.id)}>
-                    {e.title}
-                  </button>
-                </li>
-              ))}
-            </ul>
-            {selected !== null && (
-              <>
-                <table>
-                  <caption>{selected.title}</caption>
-                  <thead>
-                    <tr>
-                      <th scope="col">Outcome</th>
-                      <th scope="col">Best bid</th>
-                      <th scope="col">Best ask</th>
-                      <th scope="col">Last traded</th>
-                      <th scope="col">Spread</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {selected.rows &&
-                      selected.rows.map((row) => (
-                        <tr key={row.tokenId}>
-                          <th scope="row">
-                            <span>{row.question}</span>{' '}
-                            <span>{row.outcome}</span>
-                          </th>
-                        </tr>
-                      ))}
-                  </tbody>
-                </table>
-                {selected.inactiveMarketCount > 0 && (
-                  <p>
-                    {selected?.inactiveMarketCount} O/U lines are listed but not
-                    open yet
-                  </p>
-                )}
-              </>
-            )}
-          </>
+    <div className="app">
+      <header className="app-header">
+        <h1>NFL Markets</h1>
+        <p>Live prices from Polymarket</p>
+      </header>
+      <aside className="sidebar">
+        {state.status === 'loading' && (
+          <p role="status" className="notice">
+            Loading games... {state.eventsCount}
+          </p>
         )}
-      </section>
-    </main>
+        {state.status === 'error' && (
+          <div role="alert" className="notice">
+            <p>Could not load the games. {state.message}</p>
+            <button type="button" onClick={retry}>
+              Try again
+            </button>
+          </div>
+        )}
+        {state.status === 'ready' && games.length === 0 && (
+          <p className="notice">No NFL games are listed right now.</p>
+        )}
+        {games.length > 0 && (
+          <GamePicker
+            games={games}
+            selectedId={selectedId}
+            onSelect={(gameId) => setSelectedId(gameId)}
+          />
+        )}
+      </aside>
+      <main className="content">
+        {selected === null ? (
+          <p className="notice">Pick a game to see its markets</p>
+        ) : (
+          <MarketTable game={selected} />
+        )}
+      </main>
+    </div>
   )
 }
 

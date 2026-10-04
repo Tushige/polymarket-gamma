@@ -86,6 +86,7 @@ export function toGame(event: unknown): Game | null {
     inactiveMarketCount: 0,
     startTime: getStartTime(event),
     status: getStatus(event),
+    eventWeek: typeof event.eventWeek === 'number' ? event.eventWeek : null,
   }
   // walk the markets
   if (Array.isArray(markets)) {

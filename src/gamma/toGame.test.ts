@@ -31,6 +31,7 @@ describe('toGame', () => {
       title: 'Steelers vs. Browns',
       status: 'PENDING',
       startTime: '2026-10-02T00:15:00Z',
+      eventWeek: 4,
     })
   })
 

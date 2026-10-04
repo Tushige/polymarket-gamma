@@ -12,4 +12,5 @@ export interface Game {
   inactiveMarketCount: number
   startTime: string | null
   status: GameStatus
+  eventWeek: number | null
 }
