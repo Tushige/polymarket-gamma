@@ -14,7 +14,7 @@
   height: 28px;
   padding: 0 5px;
   border-radius: 4px;
-  font-size: 11px;
+  font-size: 14px;
 }
 
 .last .chip {
@@ -22,7 +22,7 @@
 }
 
 .spread .chip {
-  font-size: 10px;
+  font-size: 13px;
   color: var(--muted);
 }
 
@@ -73,8 +73,8 @@
   .chip {
     min-width: 0;
     height: 24px;
-    padding: 0 3px;
-    font-size: 10px;
+    padding: 0 1px;
+    font-size: 13px;
   }
 
   .value {

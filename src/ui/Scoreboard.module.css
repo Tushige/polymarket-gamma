@@ -34,7 +34,7 @@
 }
 
 .kicker {
-  font-size: 10px;
+  font-size: 12px;
   font-weight: 650;
   letter-spacing: 0.16em;
   text-transform: uppercase;
@@ -45,7 +45,7 @@
   display: flex;
   align-items: center;
   gap: 0.4rem;
-  font-size: 10px;
+  font-size: 12px;
   font-weight: 600;
   letter-spacing: 0.08em;
   text-transform: uppercase;
@@ -118,7 +118,7 @@
 
 .city {
   margin-bottom: 3px;
-  font-size: 9px;
+  font-size: 12px;
   letter-spacing: 0.1em;
   text-transform: uppercase;
   color: var(--muted);
@@ -149,7 +149,7 @@
 
 .winLabel {
   margin-top: 3px;
-  font-size: 9px;
+  font-size: 12px;
   letter-spacing: 0.04em;
   color: var(--muted);
 }
@@ -169,7 +169,7 @@
 
 .centreLabel {
   margin-top: 7px;
-  font-size: 10px;
+  font-size: 12px;
   color: var(--muted);
 }
 
@@ -202,7 +202,7 @@
   align-items: center;
   justify-content: space-between;
   margin-top: 12px;
-  font-size: 10px;
+  font-size: 12px;
   color: var(--muted);
 }
 
@@ -215,6 +215,20 @@
     padding: 1rem 0.9rem 0.8rem;
   }
 
+  /* One line at every width: a date that wraps for some games and not others
+     would move everything below it on a switch. */
+  .kicker {
+    min-width: 0;
+    overflow: hidden;
+    letter-spacing: 0.06em;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
+
+  .pill {
+    flex: none;
+  }
+
   .team {
     display: block;
   }
@@ -224,18 +238,36 @@
   }
 
   .name {
-    font-size: 22px;
+    font-size: 20px;
   }
 
   .winValue {
     font-size: 32px;
   }
 
+  /* Exact column widths and one-line team text, so the card is the same height
+     for every game: with plain 1fr a long name widens its own column, and a
+     wider centre label squeezes both, which made text wrap for some games only.
+     The centre text may wrap instead; it stays shorter than the team blocks. */
+  .match {
+    grid-template-columns: minmax(0, 1fr) 6.5rem minmax(0, 1fr);
+    gap: 8px;
+  }
+
   .centre {
-    min-width: 5rem;
+    min-width: 0;
+  }
+
+  .city,
+  .name,
+  .winLabel {
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
   }
 
   .centreNumber {
-    font-size: 17px;
+    font-size: 16px;
+    white-space: normal;
   }
 }

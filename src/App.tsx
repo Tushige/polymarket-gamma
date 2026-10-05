@@ -24,7 +24,9 @@ function App() {
           <h1>NFL Markets</h1>
           <p>Polymarket</p>
         </div>
-        <StatusPill games={state} selected={selected} />
+        <div className={styles.status}>
+          <StatusPill games={state} selected={selected} />
+        </div>
         <div className={styles.tools}>
           <ThemeToggle />
         </div>

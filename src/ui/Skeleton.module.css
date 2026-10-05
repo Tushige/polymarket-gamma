@@ -31,7 +31,7 @@
 /* The game list while it loads. The count wraps rather than widening the rail. */
 .progress {
   padding: 0 0.6rem 0.9rem;
-  font-size: 10px;
+  font-size: 12px;
   line-height: 1.6;
   color: var(--muted);
 }
@@ -170,7 +170,7 @@
 
 .notice p {
   margin-top: 0.5rem;
-  font-size: 12px;
+  font-size: 14px;
   color: var(--muted);
 }
 
