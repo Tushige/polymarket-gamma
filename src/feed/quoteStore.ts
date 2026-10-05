@@ -1,6 +1,8 @@
 import type { FeedMessage } from './messages.ts'
 import { applyMessage, EMPTY_QUOTE, type Quote } from './quote.ts'
 
+export type Schedule = (flush: () => void) => void
+
 type Listener = () => void
 
 export interface QuoteStore {
@@ -13,14 +15,32 @@ export interface QuoteStore {
   clear(): void
 }
 
-export function createQuoteStore(): QuoteStore {
+export function createQuoteStore(schedule: Schedule = (flush) => flush()): QuoteStore {
   const quotes = new Map<string, Quote>()
   const listeners = new Map<string, Set<Listener>>()
 
-  function notify(tokenId: string) {
-    const tokenListeners = listeners.get(tokenId)
-    if (tokenListeners === undefined) return
-    for (const listener of tokenListeners) listener()
+  /**
+   * Keeps track of tokens whose quote changed since subscribers were last told
+   */
+  const changedTokenIds = new Set<string>()
+  let flushScheduled = false
+
+  function flush() {
+    flushScheduled = false
+    const tokenIds = [...changedTokenIds]
+    changedTokenIds.clear()
+    for (const tokenId of tokenIds) {
+      const tokenListener = listeners.get(tokenId)
+      if (tokenListener === undefined) continue
+      for (const listener of tokenListener) listener()
+    }
+  }
+
+  function markChanged(tokenId: string) {
+    changedTokenIds.add(tokenId)
+    if (flushScheduled) return
+    flushScheduled = true
+    schedule(flush)
   }
 
   return {
@@ -34,7 +54,7 @@ export function createQuoteStore(): QuoteStore {
       for (const id of tokenIds) {
         const previous = quotes.get(id)
         quotes.delete(id)
-        if (previous !== undefined && previous !== EMPTY_QUOTE) notify(id)
+        if (previous !== undefined && previous !== EMPTY_QUOTE) markChanged(id)
       }
     },
     apply(messages) {
@@ -47,7 +67,7 @@ export function createQuoteStore(): QuoteStore {
         if (updated === current) continue
 
         quotes.set(message.tokenId, updated)
-        notify(message.tokenId)
+        markChanged(message.tokenId)
       }
     },
     get(tokenId) {
@@ -73,7 +93,7 @@ export function createQuoteStore(): QuoteStore {
       for (const [id, quote] of quotes) {
         if (quote === EMPTY_QUOTE) continue
         quotes.set(id, EMPTY_QUOTE)
-        notify(id)
+        markChanged(id)
       }
     },
   }

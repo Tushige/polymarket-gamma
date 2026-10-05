@@ -44,7 +44,7 @@ export function MarketTable({ game }: MarketTableProps) {
   )
 }
 
-function QuoteRow({ row }: { row: Row }) {
+export function QuoteRow({ row }: { row: Row }) {
   const quote = useQuote(row.tokenId)
   const decimals = decimalsForTick(quote.tickSize)
 

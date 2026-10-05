@@ -21,7 +21,14 @@ export function useSocketStatus(): SocketStatus {
   return useSyncExternalStore(onStatusChange, getStatus)
 }
 
-const quoteStore = createQuoteStore()
+/**
+ * The one store for the page. Subscribers hear about changes once per animation 
+ * frame: the screen cannot show more than that, and a burst of messages inside
+ * one frame becomes one render instead of one render per message.
+ */
+export const quoteStore = createQuoteStore((flush) => {
+  requestAnimationFrame(flush)
+})
 
 function onFrame(text: string) {
   quoteStore.apply(parseFrame(text))

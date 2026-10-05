@@ -1,4 +1,4 @@
-import { expect, test, vi } from 'vitest'
+import { describe, expect, test, vi } from 'vitest'
 import type { FeedMessage } from './messages.ts'
 import { EMPTY_QUOTE } from './quote.ts'
 import { createQuoteStore } from './quoteStore.ts'
@@ -173,4 +173,47 @@ test('clear empties every tracked quote and tells their subscribers', () => {
 
   store.apply([book('a', 0.5, 0.6)]) // still tracked
   expect(store.get('a')).toMatchObject({ bestBid: 0.5 })
+})
+
+describe('performance optimization', () => {
+  test('when a scheduler is present, React renders are batched together per paint', () => {
+    const pending: (() => void)[] = []
+    const store = createQuoteStore((flush) => pending.push(flush))
+    store.track(['a', 'b'])
+    const onA = vi.fn()
+    const onB = vi.fn()
+    store.subscribe('a', onA)
+    store.subscribe('b', onB)
+
+    store.apply([book('a', 0.5, 0.52)])
+    store.apply([priceChange('a', 0.51, 0.52)])
+    store.apply([priceChange('a', 0.52, 0.53)])
+    store.apply([book('b', 0.1, 0.2)])
+
+    // The quotes are already current; only the telling is deferred.
+    expect(store.get('a')).toMatchObject({ bestBid: 0.52 })
+    expect(onA).not.toHaveBeenCalled()
+    expect(pending).toHaveLength(1)
+
+    pending[0]?.()
+
+    expect(onA).toHaveBeenCalledTimes(1)
+    expect(onB).toHaveBeenCalledTimes(1)
+  })
+
+  test('after a flush, the next change schedules a new one', () => {
+    const pending: (() => void)[] = []
+    const store = createQuoteStore((flush) => pending.push(flush))
+    store.track(['a'])
+    const onA = vi.fn()
+    store.subscribe('a', onA)
+
+    store.apply([book('a', 0.5, 0.52)])
+    pending.shift()?.()
+    store.apply([priceChange('a', 0.51, 0.52)])
+    pending.shift()?.()
+
+    expect(onA).toHaveBeenCalledTimes(2)
+    expect(pending).toHaveLength(0)
+  })
 })
