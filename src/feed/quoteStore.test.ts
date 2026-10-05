@@ -217,3 +217,33 @@ describe('performance optimization', () => {
     expect(pending).toHaveLength(0)
   })
 })
+
+describe('last change', () => {
+  test('records when a quote last changed, and only when it changed', () => {
+    let clock = 1000
+    const store = createQuoteStore(undefined, () => clock)
+    store.track(['a', 'b'])
+    expect(store.lastChange(['a', 'b'])).toBeNull()
+
+    store.apply([book('a', 0.57, 0.58)])
+    clock = 2000
+    store.apply([priceChange('a', 0.57, 0.58)]) // changes nothing
+    expect(store.lastChange(['a', 'b'])).toBe(1000)
+
+    store.apply([book('b', 0.1, 0.2)])
+    expect(store.lastChange(['a', 'b'])).toBe(2000)
+    expect(store.lastChange(['a'])).toBe(1000)
+  })
+
+  test('forgets the time when a token is untracked or cleared', () => {
+    const store = createQuoteStore(undefined, () => 5000)
+    store.track(['a', 'b'])
+    store.apply([book('a', 0.57, 0.58), book('b', 0.1, 0.2)])
+
+    store.untrack(['a'])
+    expect(store.lastChange(['a'])).toBeNull()
+
+    store.clear()
+    expect(store.lastChange(['b'])).toBeNull()
+  })
+})

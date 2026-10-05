@@ -13,13 +13,18 @@ export interface QuoteStore {
   subscribe(tokenId: string, listener: Listener): () => void
   /** Reset every tracked quote to empty, and tell their subscribers. */
   clear(): void
+  /** When any of these tokens' quotes last changed (ms since epoch), or null. */
+  lastChange(tokenIds: readonly string[]): number | null
 }
 
 export function createQuoteStore(
   schedule: Schedule = (flush) => flush(),
+  now: () => number = () => Date.now(),
 ): QuoteStore {
   const quotes = new Map<string, Quote>()
   const listeners = new Map<string, Set<Listener>>()
+  /** When each token's quote last changed. */
+  const changedAt = new Map<string, number>()
 
   /**
    * Keeps track of tokens whose quote changed since subscribers were last told
@@ -56,6 +61,7 @@ export function createQuoteStore(
       for (const id of tokenIds) {
         const previous = quotes.get(id)
         quotes.delete(id)
+        changedAt.delete(id)
         if (previous !== undefined && previous !== EMPTY_QUOTE) markChanged(id)
       }
     },
@@ -69,6 +75,7 @@ export function createQuoteStore(
         if (updated === current) continue
 
         quotes.set(message.tokenId, updated)
+        changedAt.set(message.tokenId, now())
         markChanged(message.tokenId)
       }
     },
@@ -95,8 +102,17 @@ export function createQuoteStore(
       for (const [id, quote] of quotes) {
         if (quote === EMPTY_QUOTE) continue
         quotes.set(id, EMPTY_QUOTE)
+        changedAt.delete(id)
         markChanged(id)
       }
+    },
+    lastChange(tokenIds) {
+      let latest: number | null = null
+      for (const id of tokenIds) {
+        const at = changedAt.get(id)
+        if (at !== undefined && (latest === null || at > latest)) latest = at
+      }
+      return latest
     },
   }
 }

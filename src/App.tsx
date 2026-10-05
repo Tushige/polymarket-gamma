@@ -1,57 +1,44 @@
 import { useState } from 'react'
+import styles from './App.module.css'
+import type { Game } from './gamma/types'
 import { useGames } from './gamma/useGames'
-import { GamePicker } from './ui/GamePicker'
-import { MarketTable } from './ui/MarketTable'
-import { ConnectionStatus } from './ui/ConnectionStatus'
-import { LiveArea } from './ui/LiveArea'
+import { Board } from './ui/Board'
+import { Rail } from './ui/GamePicker'
+import { StatusPill } from './ui/StatusPill'
+import { ThemeToggle } from './ui/ThemeToggle'
+
+const NO_GAMES: Game[] = []
 
 function App() {
   const { state, retry } = useGames()
   const [selectedId, setSelectedId] = useState<string | null>(null)
 
-  const games = state.status === 'ready' ? state.games : []
+  const games = state.status === 'ready' ? state.games : NO_GAMES
   const selected = games.find((game) => game.id === selectedId) ?? null
 
   return (
-    <div className="app">
-      <header className="app-header">
-        <h1>NFL Markets</h1>
-        <p>Live prices from Polymarket</p>
-        <ConnectionStatus />
+    <div className={styles.desk}>
+      <header className={styles.top}>
+        <div className={styles.brand}>
+          <span className={styles.mark} aria-hidden="true" />
+          <h1>NFL Markets</h1>
+          <p>Polymarket</p>
+        </div>
+        <StatusPill games={state} selected={selected} />
+        <div className={styles.tools}>
+          <ThemeToggle />
+        </div>
       </header>
-      <aside className="sidebar">
-        {state.status === 'loading' && (
-          <p role="status" className="notice">
-            Loading games... {state.eventsCount}
-          </p>
-        )}
-        {state.status === 'error' && (
-          <div role="alert" className="notice">
-            <p>Could not load the games. {state.message}</p>
-            <button type="button" onClick={retry}>
-              Try again
-            </button>
-          </div>
-        )}
-        {state.status === 'ready' && games.length === 0 && (
-          <p className="notice">No NFL games are listed right now.</p>
-        )}
-        {games.length > 0 && (
-          <GamePicker
-            games={games}
-            selectedId={selectedId}
-            onSelect={(gameId) => setSelectedId(gameId)}
-          />
-        )}
+      <aside className={styles.rail}>
+        <Rail
+          state={state}
+          retry={retry}
+          selectedId={selectedId}
+          onSelect={setSelectedId}
+        />
       </aside>
-      <main className="content">
-        {selected === null ? (
-          <p className="notice">Pick a game to see its markets</p>
-        ) : (
-          <LiveArea>
-            <MarketTable game={selected} key={selected.id} />
-          </LiveArea>
-        )}
+      <main className={styles.board}>
+        <Board state={state} selected={selected} />
       </main>
     </div>
   )

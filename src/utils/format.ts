@@ -4,8 +4,13 @@ export function decimalsForTick(tickSize: string | null): number {
   return point === -1 ? 0 : tickSize.length - point - 1
 }
 
+/**
+ * Prices in cents, like Polymarket: 0.57 → "57¢". A market that ticks in
+ * thousandths keeps its extra digit: 0.045 → "4.5¢".
+ */
 export function formatPrice(value: number | null, decimals: number): string {
-  return value === null ? '-' : value.toFixed(decimals)
+  if (value === null) return '–'
+  return `${(value * 100).toFixed(Math.max(0, decimals - 2))}¢`
 }
 
 export function spread(

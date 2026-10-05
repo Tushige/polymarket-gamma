@@ -1,0 +1,16 @@
+/* A small dot that blinks slowly: "something is still happening". */
+.dot {
+  flex: none;
+  display: inline-block;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--muted);
+  animation: blink 1.1s ease-in-out infinite;
+}
+
+@keyframes blink {
+  50% {
+    opacity: 0.3;
+  }
+}

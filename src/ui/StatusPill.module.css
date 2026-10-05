@@ -1,0 +1,62 @@
+.status {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  margin-left: auto;
+  font-size: 11px;
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+/* The dot says the state at a glance: green and haloed when live, grey when
+   waiting, blinking while connecting, accent while reconnecting, red on error. */
+.dot {
+  flex: none;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--live);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--live) 12%, transparent);
+}
+
+.status[data-state='loading'] .dot,
+.status[data-state='idle'] .dot,
+.status[data-state='final'] .dot {
+  background: var(--muted);
+  box-shadow: none;
+}
+
+.status[data-state='connecting'] .dot {
+  background: var(--muted);
+  box-shadow: none;
+  animation: blink 1.1s ease-in-out infinite;
+}
+
+.status[data-state='reconnecting'] .dot {
+  background: var(--accent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 14%, transparent);
+  animation: blink 1.1s ease-in-out infinite;
+}
+
+.status[data-state='error'] {
+  color: var(--text);
+}
+
+.status[data-state='error'] .dot {
+  background: var(--down);
+  box-shadow: none;
+}
+
+.retry {
+  composes: button from './shared/tool.module.css';
+  min-height: 24px;
+  padding: 0 0.55rem;
+  font-size: 10px;
+  color: var(--text);
+}
+
+@keyframes blink {
+  50% {
+    opacity: 0.3;
+  }
+}

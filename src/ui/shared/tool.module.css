@@ -1,0 +1,31 @@
+/* The small bordered button used across the app: theme toggle, retry, clear. */
+.button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  min-height: 32px;
+  padding: 0 0.7rem;
+  border: 1px solid var(--rule);
+  border-radius: 7px;
+  font-size: 11px;
+  font-weight: 500;
+  white-space: nowrap;
+  transition:
+    background 0.18s,
+    transform 0.18s;
+}
+
+.button:hover {
+  background: var(--raised);
+  transform: translateY(-1px);
+}
+
+.button svg {
+  width: 14px;
+  height: 14px;
+  stroke: currentColor;
+  fill: none;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}

@@ -1,0 +1,83 @@
+/* Design tokens. The light palette on :root; the dark one when the OS asks for
+   it, unless the toggle chose light, or when the toggle chose dark. */
+:root {
+  --bg: #f4f5f6;
+  --surface: #fff;
+  --raised: #e9edf0;
+  --text: #17232d;
+  --muted: #66737e;
+  --rule: #dce1e5;
+  --accent: #be491b;
+  --soft: #fbece5;
+  --up: #127c56;
+  --down: #b94454;
+  --up-soft: #d7f0e4;
+  --down-soft: #fbe0e4;
+  --team-a: #c75020;
+  --team-b: #b44357;
+  --live: #127c56;
+  --focus: #be491b;
+  --sel-bg: #be491b;
+  --sel-fg: #fff;
+
+  --font-ui: 'DM Sans', system-ui, sans-serif;
+  --font-display: 'Barlow Condensed', 'Arial Narrow', sans-serif;
+  --font-mono: 'IBM Plex Mono', ui-monospace, Menlo, monospace;
+  --rail-w: 16rem;
+  --content-max: 76rem;
+  --ease: cubic-bezier(0.2, 0.8, 0.2, 1);
+
+  color-scheme: light;
+  font-family: var(--font-ui);
+  font-size: 13px;
+  line-height: 1.45;
+  color: var(--text);
+  background: var(--bg);
+  -webkit-font-smoothing: antialiased;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    --bg: #0e1319;
+    --surface: #141b23;
+    --raised: #1b2530;
+    --text: #f1f4f7;
+    --muted: #94a1ae;
+    --rule: #29323d;
+    --accent: #f4834c;
+    --soft: #2e231f;
+    --up: #6ad5ab;
+    --down: #ef8f99;
+    --up-soft: #203e35;
+    --down-soft: #422c35;
+    --team-a: #f8814b;
+    --team-b: #da6a7a;
+    --live: #6ad5ab;
+    --focus: #f4834c;
+    --sel-bg: #f4834c;
+    --sel-fg: #10151a;
+    color-scheme: dark;
+  }
+}
+
+:root[data-theme='dark'] {
+  --bg: #0e1319;
+  --surface: #141b23;
+  --raised: #1b2530;
+  --text: #f1f4f7;
+  --muted: #94a1ae;
+  --rule: #29323d;
+  --accent: #f4834c;
+  --soft: #2e231f;
+  --up: #6ad5ab;
+  --down: #ef8f99;
+  --up-soft: #203e35;
+  --down-soft: #422c35;
+  --team-a: #f8814b;
+  --team-b: #da6a7a;
+  --live: #6ad5ab;
+  --focus: #f4834c;
+  --sel-bg: #f4834c;
+  --sel-fg: #10151a;
+  color-scheme: dark;
+}

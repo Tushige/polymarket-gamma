@@ -1,0 +1,9 @@
+/* Behind the error notice: the skeleton stays, at half strength, so the page
+   reads as "not ready" rather than broken. */
+.dim {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  opacity: 0.45;
+  transition: opacity 0.3s;
+}

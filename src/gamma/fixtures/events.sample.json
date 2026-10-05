@@ -83,6 +83,30 @@
     "startTime": "2026-10-02T00:15:00Z",
     "eventDate": "2026-10-01",
     "eventWeek": 4,
+    "teams": [
+      {
+        "id": 100042,
+        "name": "Pittsburgh Steelers",
+        "league": "nfl",
+        "record": "2-2-0",
+        "logo": "https://polymarket-upload.s3.us-east-2.amazonaws.com/NFL+Team+Logos/PIT.png",
+        "abbreviation": "pit",
+        "alias": "Steelers",
+        "color": "#E0A000",
+        "ordering": "away"
+      },
+      {
+        "id": 100025,
+        "name": "Cleveland Browns",
+        "league": "nfl",
+        "record": "3-1-0",
+        "logo": "https://polymarket-upload.s3.us-east-2.amazonaws.com/NFL+Team+Logos/CLE.png",
+        "abbreviation": "cle",
+        "alias": "Browns",
+        "color": "#E02000",
+        "ordering": "home"
+      }
+    ],
     "active": true,
     "closed": false,
     "period": "NS",

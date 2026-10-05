@@ -1,0 +1,174 @@
+/* A placeholder block with a slow, low-contrast shimmer. */
+.block {
+  position: relative;
+  display: block;
+  overflow: hidden;
+  background: var(--raised);
+  border-radius: 4px;
+}
+
+.block::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    color-mix(in srgb, var(--text) 7%, transparent),
+    transparent
+  );
+  transform: translateX(-100%);
+  animation: shimmer 1.6s ease-in-out infinite;
+}
+
+/* The game list while it loads. The count wraps rather than widening the rail. */
+.progress {
+  padding: 0 0.6rem 0.9rem;
+  font-size: 10px;
+  line-height: 1.6;
+  color: var(--muted);
+}
+
+.progressDot {
+  composes: dot from './shared/pulse.module.css';
+  margin-right: 0.4rem;
+  vertical-align: middle;
+}
+
+.count {
+  font-family: var(--font-mono);
+  color: var(--text);
+}
+
+.group + .group {
+  margin-top: 1.3rem;
+}
+
+.heading {
+  width: 4.5rem;
+  height: 8px;
+  margin: 0 0.6rem 0.9rem;
+}
+
+.row {
+  display: block;
+  margin-bottom: 0.3rem;
+  padding: 0.65rem 0.6rem;
+}
+
+.line1 {
+  width: 70%;
+  height: 10px;
+  margin-bottom: 0.45rem;
+}
+
+.line2 {
+  width: 48%;
+  height: 8px;
+}
+
+/* Scoreboard shapes */
+.kicker {
+  width: 9rem;
+  height: 8px;
+}
+
+.pill {
+  width: 2.5rem;
+  height: 8px;
+}
+
+.emblem {
+  width: 44px;
+  height: 49px;
+  border-radius: 8px 8px 15px 15px;
+}
+
+.name {
+  width: 7rem;
+  height: 20px;
+  margin-top: 6px;
+}
+
+.number {
+  width: 4.2rem;
+  height: 30px;
+  margin-top: 12px;
+}
+
+.alignEnd {
+  margin-left: auto;
+}
+
+.centre {
+  width: 6rem;
+  height: 18px;
+  margin: 0 auto;
+}
+
+.centre2 {
+  width: 4rem;
+  height: 8px;
+  margin: 10px auto 0;
+}
+
+.bar {
+  position: relative;
+  height: 4px;
+  border-radius: 2px;
+}
+
+/* Table shapes */
+.title {
+  width: 9rem;
+  height: 14px;
+}
+
+.rows td {
+  height: 40px;
+}
+
+.cell {
+  width: 3.2rem;
+  height: 12px;
+  margin-left: auto;
+}
+
+.cellLabel {
+  width: 5rem;
+  margin-left: 0;
+}
+
+.cellShort {
+  width: 4rem;
+  margin-left: 0;
+}
+
+.cellNarrow {
+  width: 1.6rem;
+}
+
+/* The calm card in place of the scoreboard when there is nothing to show. */
+.notice {
+  position: relative;
+  padding: 2.4rem 1rem 2.6rem;
+  text-align: center;
+}
+
+.notice h2 {
+  font: 700 24px/1.1 var(--font-display);
+  letter-spacing: 0.3px;
+  text-transform: uppercase;
+}
+
+.notice p {
+  margin-top: 0.5rem;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+@keyframes shimmer {
+  to {
+    transform: translateX(100%);
+  }
+}

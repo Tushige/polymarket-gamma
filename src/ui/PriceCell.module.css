@@ -1,0 +1,83 @@
+.cell {
+  font-family: var(--font-mono);
+}
+
+/* The price chip. The flash (utils/flash.ts) animates its background and
+   colour, and sets data-dir so the matching arrow shows. */
+.chip {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 3px;
+  min-width: 54px;
+  height: 28px;
+  padding: 0 5px;
+  border-radius: 4px;
+  font-size: 11px;
+}
+
+.last .chip {
+  font-weight: 600;
+}
+
+.spread .chip {
+  font-size: 10px;
+  color: var(--muted);
+}
+
+.arrow {
+  width: 10px;
+  height: 10px;
+  opacity: 0;
+  stroke: currentColor;
+  fill: none;
+  stroke-width: 2.2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.down,
+.chip[data-dir='down'] .up {
+  display: none;
+}
+
+.chip[data-dir='down'] .down {
+  display: inline;
+}
+
+/* The number, with room for the previous one to roll out over it. */
+.value {
+  position: relative;
+  display: inline-block;
+  min-width: 33px;
+  height: 18px;
+  line-height: 18px;
+  text-align: right;
+  white-space: nowrap;
+}
+
+.departing {
+  position: absolute;
+  top: 0;
+  right: 0;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.current {
+  display: inline-block;
+}
+
+@media (max-width: 760px) {
+  .chip {
+    min-width: 0;
+    height: 24px;
+    padding: 0 3px;
+    font-size: 10px;
+  }
+
+  .value {
+    min-width: 0;
+  }
+}

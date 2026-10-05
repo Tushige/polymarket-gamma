@@ -19,17 +19,24 @@ describe('decimalsForTick', () => {
 })
 
 describe('formatPrice', () => {
-  test('pads to the number of decimals', () => {
-    expect(formatPrice(0.5, 2)).toBe('0.50')
-    expect(formatPrice(0.4, 3)).toBe('0.400')
+  test('shows cents, like Polymarket', () => {
+    expect(formatPrice(0.57, 2)).toBe('57¢')
+    expect(formatPrice(0.5, 2)).toBe('50¢')
   })
 
-  test('keeps a third decimal on a fine-tick market', () => {
-    expect(formatPrice(0.866, 3)).toBe('0.866')
+  test('keeps the tick: a thousandths market shows tenths of a cent', () => {
+    expect(formatPrice(0.866, 3)).toBe('86.6¢')
+    expect(formatPrice(0.4, 3)).toBe('40.0¢')
+    expect(formatPrice(0.999, 3)).toBe('99.9¢')
+  })
+
+  test('formats a spread the same way', () => {
+    expect(formatPrice(0.01, 2)).toBe('1¢')
+    expect(formatPrice(0.124, 3)).toBe('12.4¢')
   })
 
   test('shows a dash when there is no price', () => {
-    expect(formatPrice(null, 2)).toBe('-')
+    expect(formatPrice(null, 2)).toBe('–')
   })
 })
 

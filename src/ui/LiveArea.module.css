@@ -1,0 +1,32 @@
+.area {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-height: 0;
+}
+
+/* While the feed reconnects the numbers are old. The scoreboard and the table
+   read this variable to dim their own numbers, so no component needs to know
+   another's class names. */
+.area[data-stale] {
+  --stale-opacity: 0.5;
+}
+
+.banner {
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: 0.6rem;
+  max-width: var(--content-max);
+  margin: 0 0 0.6rem;
+  padding: 0.45rem 0.8rem;
+  border: 1px solid var(--rule);
+  border-radius: 7px;
+  background: var(--surface);
+  font-size: 11px;
+}
+
+.bannerDot {
+  composes: dot from './shared/pulse.module.css';
+  background: var(--accent);
+}

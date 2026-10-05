@@ -1,0 +1,124 @@
+/* The page: a top bar across, then the rail beside the board. The rail and the
+   table scroll on their own; min-height: 0 at each level lets them. */
+.desk {
+  display: grid;
+  grid-template-columns: 16rem minmax(0, 1fr);
+  grid-template-rows: auto minmax(0, 1fr);
+  height: 100dvh;
+}
+
+.top {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+  min-width: 0;
+  min-height: 4rem;
+  padding: 0 1.5rem;
+  background: var(--surface);
+  border-bottom: 1px solid var(--rule);
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  min-width: 0;
+}
+
+.brand h1 {
+  font: italic 800 1.55rem/1 var(--font-display);
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.brand p {
+  margin-left: 0.6rem;
+  padding-left: 1.25rem;
+  border-left: 1px solid var(--rule);
+  font-size: 11px;
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+/* Two slanted bars in the accent colour. */
+.mark {
+  display: flex;
+  gap: 3px;
+  height: 22px;
+  transform: skew(-15deg);
+}
+
+.mark::before,
+.mark::after {
+  content: '';
+  display: block;
+  width: 7px;
+  background: var(--accent);
+}
+
+.mark::after {
+  height: 15px;
+  align-self: flex-end;
+  opacity: 0.55;
+}
+
+.tools {
+  display: flex;
+  gap: 0.6rem;
+}
+
+.rail {
+  display: flex;
+  flex-direction: column;
+  gap: 1.3rem;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 1.5rem 0.75rem 1rem;
+  background: var(--surface);
+  border-right: 1px solid var(--rule);
+}
+
+.board {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+  padding: 1.5rem 1.5rem 1rem;
+}
+
+/* Phones: the rail becomes a strip under the top bar. */
+@media (max-width: 760px) {
+  .desk {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: auto auto minmax(0, 1fr);
+  }
+
+  .top {
+    flex-wrap: wrap;
+    min-height: 0;
+    gap: 0.6rem 0.8rem;
+    padding: 0.7rem 0.85rem 0.75rem;
+  }
+
+  .brand p {
+    display: none;
+  }
+
+  .rail {
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    overflow-x: auto;
+    overflow-y: hidden;
+    padding: 0.6rem 0.85rem;
+    border-right: 0;
+    border-bottom: 1px solid var(--rule);
+    scrollbar-width: none;
+  }
+
+  .board {
+    padding: 1rem 0.85rem 0;
+  }
+}

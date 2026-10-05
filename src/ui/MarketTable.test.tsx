@@ -1,5 +1,5 @@
 // @vitest-environment happy-dom
-import { act, render } from '@testing-library/react'
+import { act, render, within } from '@testing-library/react'
 import { Profiler } from 'react'
 import { beforeAll, expect, test, vi } from 'vitest'
 import { quoteStore } from '../feed/live.ts'
@@ -9,13 +9,15 @@ import { QuoteRow } from './MarketTable.tsx'
 
 beforeAll(() => {
   // Test DOMs do not implement element.animate, which the flash uses.
-  Element.prototype.animate = vi.fn()
+  Element.prototype.animate = vi.fn(
+    () => ({ cancel: () => {} }) as unknown as Animation,
+  )
 })
 
 const rows: Row[] = [
-  { tokenId: 'a', question: 'Q', outcome: 'A' },
-  { tokenId: 'b', question: 'Q', outcome: 'B' },
-  { tokenId: 'c', question: 'Q', outcome: 'C' },
+  { tokenId: 'a', question: 'Q', outcome: 'A', line: null },
+  { tokenId: 'b', question: 'Q', outcome: 'B', line: null },
+  { tokenId: 'c', question: 'Q', outcome: 'C', line: null },
 ]
 
 const book = (tokenId: string, bestBid: number): FeedMessage => ({
@@ -64,6 +66,8 @@ test('a message for one token re-renders that row and no other', async () => {
   await nextFrame()
 
   expect(renders).toEqual({ a: 0, b: 1, c: 0 })
-  const cells = getAllByRole('cell').map((cell) => cell.textContent)
-  expect(cells.slice(4, 6)).toEqual(['0.61', '0.62'])
+  const values = getAllByRole('cell').map(
+    (cell) => within(cell).getByTestId('price').textContent,
+  )
+  expect(values.slice(4, 6)).toEqual(['61¢', '62¢'])
 })

@@ -1,5 +1,5 @@
 import { isRecord } from '../utils'
-import type { Game, GameStatus, Row } from './types'
+import type { Game, GameStatus, Row, TeamInfo } from './types'
 
 const NUMBER = /^\d+(\.\d+)?$/
 export const GAME_SLUG: RegExp = /^nfl-[a-z]{2,4}-[a-z]{2,4}-\d{4}-\d{2}-\d{2}$/
@@ -20,6 +20,53 @@ function getStartTime(event: Record<string, unknown>): string | null {
     return value
   }
   return null
+}
+
+/** "Houston Texans" with alias "Texans" → "Houston". Empty when the alias is not the name's ending. */
+export function cityOf(name: string, alias: string): string {
+  const suffix = ` ${alias}`
+  return name.endsWith(suffix) ? name.slice(0, -suffix.length).trim() : ''
+}
+
+function toTeam(value: unknown): (TeamInfo & { ordering: unknown }) | null {
+  if (!isRecord(value)) return null
+  const { name, alias, abbreviation, ordering } = value
+  if (
+    typeof name !== 'string' ||
+    typeof alias !== 'string' ||
+    typeof abbreviation !== 'string'
+  ) {
+    return null
+  }
+  return {
+    name,
+    alias,
+    code: abbreviation.toUpperCase(),
+    city: cityOf(name, alias),
+    ordering,
+  }
+}
+
+/**
+ * The event's `teams` field, placed by its own `ordering`. Both teams or
+ * neither: a half-described matchup falls back to the title and slug.
+ */
+function getTeams(event: Record<string, unknown>): {
+  away: TeamInfo | null
+  home: TeamInfo | null
+} {
+  const none = { away: null, home: null }
+  if (!Array.isArray(event.teams)) return none
+  const teams = event.teams.map(toTeam)
+  const find = (ordering: string): TeamInfo | null => {
+    const team = teams.find((candidate) => candidate?.ordering === ordering)
+    if (!team) return null
+    const { name, alias, code, city } = team
+    return { name, alias, code, city }
+  }
+  const away = find('away')
+  const home = find('home')
+  return away && home ? { away, home } : none
 }
 
 /**
@@ -50,13 +97,14 @@ export function totalLine(title: string, question: string): number | null {
 function collectRows(
   market: Record<string, unknown>,
   question: string,
+  line: number | null,
 ): Row[] | null {
   const outcomes = parsePair(market.outcomes)
   const tokenIds = parsePair(market.clobTokenIds)
   if (!tokenIds || !outcomes) return null
   return [
-    { tokenId: tokenIds[0], question, outcome: outcomes[0] },
-    { tokenId: tokenIds[1], question, outcome: outcomes[1] },
+    { tokenId: tokenIds[0], question, outcome: outcomes[0], line },
+    { tokenId: tokenIds[1], question, outcome: outcomes[1], line },
   ]
 }
 
@@ -89,6 +137,7 @@ export function toGame(event: unknown): Game | null {
     startTime: getStartTime(event),
     status: getStatus(event),
     eventWeek: typeof event.eventWeek === 'number' ? event.eventWeek : null,
+    ...getTeams(event),
   }
   // walk the markets
   if (Array.isArray(markets)) {
@@ -103,7 +152,7 @@ export function toGame(event: unknown): Game | null {
       // any market that is not a moneyline or totalline is ignored
       if (!isMoneyLine && line === null) continue
 
-      const marketRows = collectRows(market, market.question)
+      const marketRows = collectRows(market, market.question, line)
       if (marketRows === null) {
         game.inactiveMarketCount++
         continue

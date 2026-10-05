@@ -95,4 +95,48 @@ describe('toGame', () => {
     expect(raw.endDate).not.toBe(raw.startTime)
     expect(toGame(raw)?.startTime).toBe('2026-10-11T17:00:00Z')
   })
+
+  test('keeps each team’s full name, city and code, placed by home and away', () => {
+    const game = toGame(event('nfl-pit-cle-2026-10-02'))
+    expect(game?.away).toEqual({
+      name: 'Pittsburgh Steelers',
+      alias: 'Steelers',
+      code: 'PIT',
+      city: 'Pittsburgh',
+    })
+    expect(game?.home).toEqual({
+      name: 'Cleveland Browns',
+      alias: 'Browns',
+      code: 'CLE',
+      city: 'Cleveland',
+    })
+  })
+
+  test('has no team details when the event carries none, or carries them malformed', () => {
+    expect(toGame(event('nfl-ne-chi-2026-10-23'))).toMatchObject({
+      away: null,
+      home: null,
+    })
+    const broken = { ...event('nfl-pit-cle-2026-10-02'), teams: 'none' }
+    expect(toGame(broken)).toMatchObject({ away: null, home: null })
+    const oneSided = {
+      ...event('nfl-pit-cle-2026-10-02'),
+      teams: [
+        {
+          name: 'Pittsburgh Steelers',
+          alias: 'Steelers',
+          abbreviation: 'pit',
+          ordering: 'away',
+        },
+      ],
+    }
+    expect(toGame(oneSided)).toMatchObject({ away: null, home: null })
+  })
+
+  test('a moneyline row has no line; a total row carries its line', () => {
+    const game = toGame(event('nfl-pit-cle-2026-10-02'))
+    expect(game?.rows[0]?.line).toBeNull()
+    expect(game?.rows[2]).toMatchObject({ outcome: 'Over', line: 35.5 })
+    expect(game?.rows[3]).toMatchObject({ outcome: 'Under', line: 35.5 })
+  })
 })
