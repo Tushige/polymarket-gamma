@@ -1,16 +1,16 @@
 import { isRecord } from '../utils'
-import { GAME_SLUG } from './fetchGames'
 import type { Game, GameStatus, Row } from './types'
 
 const NUMBER = /^\d+(\.\d+)?$/
+export const GAME_SLUG: RegExp = /^nfl-[a-z]{2,4}-[a-z]{2,4}-\d{4}-\d{2}-\d{2}$/
 
 type LineGroup = {
   line: number
   rows: Row[]
 }
 function getStatus(event: Record<string, unknown>): GameStatus {
-  if (event.ended) return 'ENDED'
-  if (event.live) return 'LIVE'
+  if (event.ended === true) return 'ENDED'
+  if (event.live === true) return 'LIVE'
   return 'PENDING'
 }
 
@@ -27,7 +27,7 @@ function getStartTime(event: Record<string, unknown>): string | null {
  * Returns null for anything else, including a missing field.
  */
 export function parsePair(value: unknown): [string, string] | null {
-  if (!value || typeof value !== 'string') return null
+  if (typeof value !== 'string') return null
   try {
     const arr = JSON.parse(value)
     if (!Array.isArray(arr) || arr.length !== 2) return null
@@ -67,7 +67,7 @@ function collectRows(
  * An event is a game if
  * 1. event is an object
  * 2. id, title, slug fields are strings
- * 3. the title is of the GAME_SLUG form
+ * 3. the slug is of the GAME_SLUG form
  */
 export function toGame(event: unknown): Game | null {
   if (!isRecord(event)) return null
@@ -84,6 +84,7 @@ export function toGame(event: unknown): Game | null {
     slug,
     title,
     rows: [],
+    tokenIds: [],
     inactiveMarketCount: 0,
     startTime: getStartTime(event),
     status: getStatus(event),
@@ -119,5 +120,6 @@ export function toGame(event: unknown): Game | null {
     totalLineRows.sort((a, b) => a.line - b.line)
     game.rows.push(...totalLineRows.map((lineRow) => lineRow.rows).flat())
   }
+  game.tokenIds = game.rows.map((row) => row.tokenId)
   return game
 }

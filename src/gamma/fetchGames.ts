@@ -1,21 +1,14 @@
 import { toGame } from './toGame'
-import type { Game, GameStatus } from './types'
+import { GAME_STATUS_ORDER, type Game } from './types'
 
-const MAX_PAGES = 20
-
-export const GAME_SLUG: RegExp = /^nfl-[a-z]{2,4}-[a-z]{2,4}-\d{4}-\d{2}-\d{2}$/
-
-const GAME_STATUS_ORDER: Record<GameStatus, number> = Object.freeze({
-  LIVE: 0,
-  PENDING: 1,
-  ENDED: 2,
-})
+const MAX_PAGES = 50
 
 function getStartTimeOrInfinity(game: Game): number {
   return game.startTime === null ? Infinity : Date.parse(game.startTime)
 }
 function sortByStatusThenStartTime(a: Game, b: Game) {
-  const diff = GAME_STATUS_ORDER[a.status] - GAME_STATUS_ORDER[b.status]
+  const diff =
+    GAME_STATUS_ORDER.indexOf(a.status) - GAME_STATUS_ORDER.indexOf(b.status)
   if (diff !== 0) return diff
   // use startTime as tie breaker
   const aStartTime = getStartTimeOrInfinity(a)
@@ -60,7 +53,7 @@ export async function fetchGames(
     }
     const games = pageEvents
       .map((event) => toGame(event))
-      .filter((event) => !!event)
+      .filter((game) => !!game)
 
     games.forEach((game) => gamesCollection.set(game.id, game))
     offset += pageEvents.length

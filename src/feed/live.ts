@@ -36,11 +36,11 @@ function onFrame(text: string) {
 
 export function useLiveQuotes(tokenIds: readonly string[]) {
   useEffect(() => {
-    subscribe(tokenIds)
     quoteStore.track(tokenIds)
+    subscribe(tokenIds)
     return () => {
-      unsubscribe(tokenIds)
       quoteStore.untrack(tokenIds)
+      unsubscribe(tokenIds)
     }
   }, [tokenIds])
 }

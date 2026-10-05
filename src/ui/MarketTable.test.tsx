@@ -8,9 +8,8 @@ import type { Row } from '../gamma/types.ts'
 import { QuoteRow } from './MarketTable.tsx'
 
 beforeAll(() => {
-  // Test DOMs implement neither of these, and the flash uses both.
+  // Test DOMs do not implement element.animate, which the flash uses.
   Element.prototype.animate = vi.fn()
-  window.matchMedia = vi.fn().mockReturnValue({ matches: false })
 })
 
 const rows: Row[] = [

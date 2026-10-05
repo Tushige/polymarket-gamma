@@ -26,25 +26,39 @@ export type FeedMessage =
       tickSize: string
     }
 
-type Item = Record<string, unknown>
+/** One object from a frame, before its fields have been checked. */
+type FrameItem = Record<string, unknown>
 
+/**
+ * The best price among a side's levels: the highest bid or the lowest ask,
+ * depending on `isBetter`. Levels whose price is not a price are skipped.
+ */
 function bestPrice(
-  items: unknown[],
+  levels: unknown[],
   initial: number,
-  comparatorFunc: (current: number, best: number) => boolean,
+  isBetter: (price: number, best: number) => boolean,
 ) {
   let bestSeen: number = initial
-  for (const item of items) {
-    if (!isRecord(item)) continue
-    const price = toPrice(item.price)
+  for (const level of levels) {
+    if (!isRecord(level)) continue
+    const price = toPrice(level.price)
     if (price === null) continue
-    if (comparatorFunc(price, bestSeen)) {
+    if (isBetter(price, bestSeen)) {
       bestSeen = price
     }
   }
   return bestSeen !== initial ? bestSeen : null
 }
-function createFeedMessageFromBook(item: Item): FeedMessage[] {
+
+/**
+ * A tick size is a price step. It is kept as the string the feed sent, because
+ * its number of decimals decides how prices are shown; anything else is null.
+ */
+function toTickSize(value: unknown): string | null {
+  return typeof value === 'string' && toPrice(value) !== null ? value : null
+}
+
+function createFeedMessageFromBook(item: FrameItem): FeedMessage[] {
   if (
     typeof item.asset_id !== 'string' ||
     !Array.isArray(item.bids) ||
@@ -59,21 +73,20 @@ function createFeedMessageFromBook(item: Item): FeedMessage[] {
       bestBid: bestPrice(
         item.bids,
         Number.MIN_SAFE_INTEGER,
-        (current, best) => current > best,
+        (price, best) => price > best,
       ),
       bestAsk: bestPrice(
         item.asks,
         Number.MAX_SAFE_INTEGER,
-        (current, best) => current < best,
+        (price, best) => price < best,
       ),
       lastTrade: toPrice(item.last_trade_price),
-      tickSize:
-        toPrice(item.tick_size) === null ? null : String(item.tick_size),
+      tickSize: toTickSize(item.tick_size),
     },
   ]
 }
 
-function createFeedMessageFromPriceChange(item: Item): FeedMessage[] {
+function createFeedMessageFromPriceChange(item: FrameItem): FeedMessage[] {
   if (!Array.isArray(item.price_changes)) return []
   const messages: FeedMessage[] = []
   for (const change of item.price_changes) {
@@ -95,7 +108,7 @@ function createFeedMessageFromPriceChange(item: Item): FeedMessage[] {
   return messages
 }
 
-function createFeedMessageFromLastTrade(item: Item): FeedMessage[] {
+function createFeedMessageFromLastTrade(item: FrameItem): FeedMessage[] {
   const price = toPrice(item.price)
   if (typeof item.asset_id !== 'string' || price === null) return []
   return [
@@ -106,15 +119,14 @@ function createFeedMessageFromLastTrade(item: Item): FeedMessage[] {
     },
   ]
 }
-function createFeedMessageFromTickSizeChange(item: Item): FeedMessage[] {
-  if (typeof item.asset_id !== 'string' || !toPrice(item.new_tick_size)) {
-    return []
-  }
+function createFeedMessageFromTickSizeChange(item: FrameItem): FeedMessage[] {
+  const tickSize = toTickSize(item.new_tick_size)
+  if (typeof item.asset_id !== 'string' || tickSize === null) return []
   return [
     {
       type: 'tick_size_change',
       tokenId: item.asset_id,
-      tickSize: String(item.new_tick_size),
+      tickSize,
     },
   ]
 }
@@ -135,10 +147,9 @@ function toFeedMessage(item: unknown): FeedMessage[] {
   }
 }
 /**
- * @param frame an Array or an Object
+ * @param frameText an Array or an Object
  * After the first subscription, the API sends an array of event_type: 'book'
  * Subsequent frames send deltas i.e. one object
- * @returns
  */
 export function parseFrame(frameText: string): FeedMessage[] {
   try {
@@ -148,14 +159,14 @@ export function parseFrame(frameText: string): FeedMessage[] {
     /**
      * convert each item into a FeedMessage object and flatten everything into one list of FeedMessage
      */
-    return frameItems.flatMap(toFeedMessage).filter((msg) => !!msg)
+    return frameItems.flatMap(toFeedMessage)
   } catch {
     return []
   }
 }
 
 /**
- * Takes a val and produces a price in the range of [0, 1]
+ * Takes a val and produces a price in the range of (0, 1)
  * invalid prices produce null
  * If the feed API says "no price" i.e. "", "0", or "1", then null is returned
  */

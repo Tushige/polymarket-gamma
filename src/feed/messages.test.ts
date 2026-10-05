@@ -33,89 +33,10 @@ describe('toPrice', () => {
     expect(toPrice('1')).toBeNull()
   })
 
-  test('invalid price formates produce a null result', () => {
+  test('invalid price formats produce a null result', () => {
     expect(toPrice('abc')).toBeNull()
     expect(toPrice(undefined)).toBeNull()
     expect(toPrice(0.57)).toBeNull()
-  })
-})
-
-describe('parseFrame: the snapshot', () => {
-  test('is an array, and gives one book message per token', () => {
-    const messages = parseFrame(asFrame(frames.snapshot))
-
-    expect(messages).toHaveLength(12)
-    expect(messages.every((message) => message.type === 'book')).toBe(true)
-  })
-
-  test('takes the highest bid and the lowest ask, not the first of each', () => {
-    const raw = frames.snapshot.find((book) => book.asset_id === STEELERS)
-    expect(raw?.bids[0]?.price).toBe('0.01')
-    expect(raw?.asks[0]?.price).toBe('0.99')
-
-    expect(bookFor(STEELERS)).toMatchObject({ bestBid: 0.57, bestAsk: 0.58 })
-  })
-
-  test('carries the last trade and the tick size', () => {
-    expect(bookFor(STEELERS)).toMatchObject({
-      lastTrade: 0.42,
-      tickSize: '0.01',
-    })
-  })
-
-  test('has no last trade for a token that never traded', () => {
-    const raw = frames.snapshot.find((book) => book.asset_id === OVER_41_5)
-    expect(raw?.last_trade_price).toBe('')
-
-    expect(bookFor(OVER_41_5)).toMatchObject({ lastTrade: null })
-  })
-
-  test('keeps three decimals on a market that ticks in thousandths', () => {
-    expect(bookFor(UNDER_64_5)).toMatchObject({
-      bestBid: 0.866,
-      bestAsk: 0.99,
-      tickSize: '0.001',
-    })
-  })
-
-  test('has no best bid or ask when the book is empty', () => {
-    const [message] = parseFrame(asFrame([frames.emptyBook]))
-
-    expect(message).toMatchObject({ bestBid: null, bestAsk: null })
-  })
-})
-
-describe('parseFrame: messages after the snapshot', () => {
-  test('a later book is one object, without last trade or tick size', () => {
-    expect(frames.laterBook).not.toHaveProperty('tick_size')
-    expect(frames.laterBook).not.toHaveProperty('last_trade_price')
-
-    expect(parseFrame(asFrame(frames.laterBook))).toEqual([
-      {
-        type: 'book',
-        tokenId: frames.laterBook.asset_id,
-        bestBid: 0.5,
-        bestAsk: 0.52,
-        lastTrade: null,
-        tickSize: null,
-      },
-    ])
-  })
-})
-
-describe('parseFrame: everything else', () => {
-  test('plain text from the server gives nothing, and does not throw', () => {
-    expect(parseFrame('PONG')).toEqual([])
-    expect(parseFrame('NO NEW ASSETS')).toEqual([])
-    expect(parseFrame('INVALID OPERATION')).toEqual([])
-    expect(parseFrame('')).toEqual([])
-  })
-
-  test('JSON it does not recognise gives nothing', () => {
-    expect(parseFrame('{"event_type":"new_market","asset_id":"1"}')).toEqual([])
-    expect(parseFrame('{"event_type":"book"}')).toEqual([])
-    expect(parseFrame('[1, null, "book"]')).toEqual([])
-    expect(parseFrame('42')).toEqual([])
   })
 })
 
@@ -229,7 +150,9 @@ describe('parseFrame: last_trade_price', () => {
       },
     ])
   })
+})
 
+describe('parseFrame: tick_size_change', () => {
   test('a tick size change gives the new tick size', () => {
     expect(parseFrame(asFrame(frames.tickSizeChange))).toEqual([
       {

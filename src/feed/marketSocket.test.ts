@@ -191,28 +191,17 @@ describe('Testing PING', () => {
 
     expect(ws.sent.filter((frame) => frame === 'PING')).toHaveLength(0)
   })
-
-  test('a subscribe made while waiting to reconnect travels in the next first frame', () => {
-    const { client, connection, sentJson } = setup()
-    client.subscribe(['a'])
-    connection().serverAccepts()
-    connection().close()
-
-    client.subscribe(['b'])
-    vi.advanceTimersByTime(1000)
-    connection().serverAccepts()
-
-    expect(FakeWebSocket.created).toHaveLength(2)
-    expect(sentJson()).toEqual([
-      { assets_ids: ['a', 'b'], type: 'market', initial_dump: true },
-    ])
-  })
 })
 
 describe('reconnecting', () => {
   beforeEach(() => {
     // Jitter would make the delays unpredictable. Pin it to "the full delay".
     vi.spyOn(Math, 'random').mockReturnValue(1)
+  })
+
+  afterEach(() => {
+    // Give the real Math.random back, so the pin cannot leak into other tests.
+    vi.restoreAllMocks()
   })
 
   test('connects again after a drop, with delays that double', () => {

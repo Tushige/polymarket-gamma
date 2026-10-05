@@ -35,7 +35,7 @@ export function useGames(): { state: GamesState; retry: () => void } {
       })
       .catch((err: unknown) => {
         if (err instanceof Error && err.name === 'AbortError') {
-          console.log('Stale fetchGames request successfully aborted')
+          return
         } else {
           setState({
             status: 'error',

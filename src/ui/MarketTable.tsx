@@ -9,7 +9,7 @@ interface MarketTableProps {
 }
 export function MarketTable({ game }: MarketTableProps) {
   const titleId = useId()
-  useLiveQuotes(game.rows.map((row) => row.tokenId))
+  useLiveQuotes(game.tokenIds)
 
   return (
     <div className="market-panel">

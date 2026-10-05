@@ -10,7 +10,7 @@ function App() {
   const [selectedId, setSelectedId] = useState<string | null>(null)
 
   const games = state.status === 'ready' ? state.games : []
-  const selected = games?.find((game) => game.id === selectedId) ?? null
+  const selected = games.find((game) => game.id === selectedId) ?? null
 
   return (
     <div className="app">
@@ -49,7 +49,7 @@ function App() {
           <p className="notice">Pick a game to see its markets</p>
         ) : (
           <LiveArea>
-            <MarketTable game={selected} />
+            <MarketTable game={selected} key={selected.id} />
           </LiveArea>
         )}
       </main>

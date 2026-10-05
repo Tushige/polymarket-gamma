@@ -1,9 +1,9 @@
-import type { Game } from '../gamma/types'
+import { GAME_STATUS_ORDER, type Game, type GameStatus } from '../gamma/types'
 
 /**
  * use the user's local time
  */
-const DateFormatter = new Intl.DateTimeFormat(undefined, {
+const dateFormatter = new Intl.DateTimeFormat(undefined, {
   weekday: 'short',
   month: 'short',
   day: 'numeric',
@@ -11,7 +11,7 @@ const DateFormatter = new Intl.DateTimeFormat(undefined, {
   minute: '2-digit',
 })
 
-interface GamepickerProps {
+interface GamePickerProps {
   games: Game[]
   selectedId: string | null
   onSelect: (id: string) => void
@@ -24,7 +24,7 @@ interface GameCategory {
 
 function startTimeLabel(game: Game) {
   if (game.startTime === null) return 'TBD'
-  return DateFormatter.format(new Date(game.startTime))
+  return dateFormatter.format(new Date(game.startTime))
 }
 
 /**
@@ -56,27 +56,25 @@ function splitGamesIntoWeeks(games: Game[]) {
  * Takes a list of games and splits into sections
  */
 function splitGamesIntoCategories(games: Game[]): GameCategory[] {
-  const liveGames: GameCategory = { title: 'Live now', games: [] }
-  const finishedGames: GameCategory = { title: 'Ended', games: [] }
-  const pendingGames: Game[] = []
-
-  for (const game of games) {
-    if (game.status === 'LIVE') {
-      liveGames.games.push(game)
-    } else if (game.status === 'ENDED') {
-      finishedGames.games.push(game)
-    } else {
-      pendingGames.push(game)
-    }
+  const byStatus: Record<GameStatus, Game[]> = {
+    LIVE: [],
+    PENDING: [],
+    ENDED: [],
   }
-  return [
-    liveGames,
-    ...splitGamesIntoWeeks(pendingGames),
-    finishedGames,
-  ].filter((category) => category.games.length > 0)
+  for (const game of games) byStatus[game.status].push(game)
+
+  // The sections for each status. A Record, so a new status cannot be left out.
+  const sections: Record<GameStatus, GameCategory[]> = {
+    LIVE: [{ title: 'Live now', games: byStatus.LIVE }],
+    PENDING: splitGamesIntoWeeks(byStatus.PENDING),
+    ENDED: [{ title: 'Ended', games: byStatus.ENDED }],
+  }
+  return GAME_STATUS_ORDER.flatMap((status) => sections[status]).filter(
+    (category) => category.games.length > 0,
+  )
 }
 
-export function GamePicker({ games, selectedId, onSelect }: GamepickerProps) {
+export function GamePicker({ games, selectedId, onSelect }: GamePickerProps) {
   return (
     <nav className="picker" aria-label="Games">
       {splitGamesIntoCategories(games).map((category) => (
