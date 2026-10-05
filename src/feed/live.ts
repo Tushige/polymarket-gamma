@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useSyncExternalStore } from 'react'
-import { createMarketSocket } from './marketSocket'
+import { createMarketSocket, type SocketStatus } from './marketSocket'
 import { parseFrame } from './messages'
 import { createQuoteStore } from './quoteStore'
 import type { Quote } from './quote'
@@ -7,10 +7,19 @@ import type { Quote } from './quote'
 /**
  * One connection for the page
  */
-const { subscribe, unsubscribe, close } = createMarketSocket({
-  url: 'wss://ws-subscriptions-clob.polymarket.com/ws/market',
-  onFrame,
-})
+const { subscribe, unsubscribe, close, retry, onStatusChange, getStatus } =
+  createMarketSocket({
+    url: 'wss://ws-subscriptions-clob.polymarket.com/ws/market',
+    onFrame,
+    // After a gap, every number on screen must come from the new snapshot.
+    onReconnect: () => quoteStore.clear(),
+  })
+
+export const retryConnection = retry
+
+export function useSocketStatus(): SocketStatus {
+  return useSyncExternalStore(onStatusChange, getStatus)
+}
 
 const quoteStore = createQuoteStore()
 

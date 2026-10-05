@@ -89,18 +89,34 @@ test('the first frame is the subscribe message', () => {
     { assets_ids: ['a', 'b'], type: 'market', initial_dump: true },
   ])
 })
-
-test('a subscribe made while connecting travels in the first frame', () => {
+test('a subscribe made while waiting to reconnect travels in the next first frame', () => {
   const { client, connection, sentJson } = setup()
-
   client.subscribe(['a'])
+  connection().serverAccepts()
+  connection().close()
+
   client.subscribe(['b'])
+  vi.advanceTimersByTime(1000)
   connection().serverAccepts()
 
-  expect(FakeWebSocket.created).toHaveLength(1)
+  expect(FakeWebSocket.created).toHaveLength(2)
   expect(sentJson()).toEqual([
     { assets_ids: ['a', 'b'], type: 'market', initial_dump: true },
   ])
+})
+
+test('reports its status, and tells listeners when it changes', () => {
+  const { client, connection } = setup()
+  const seen: string[] = []
+  client.onStatusChange(() => seen.push(client.getStatus()))
+  expect(client.getStatus()).toBe('idle')
+
+  client.subscribe(['a'])
+  connection().serverAccepts()
+  connection().close()
+  client.close()
+
+  expect(seen).toEqual(['connecting', 'open', 'reconnecting', 'idle'])
 })
 
 test('subscribe, unsubscribe, subscribe before opening leaves one subscription', () => {
@@ -155,7 +171,10 @@ describe('Testing PING', () => {
     vi.advanceTimersByTime(10_000)
     expect(connection().sent.at(-1)).toBe('PING')
 
-    vi.advanceTimersByTime(20_000)
+    connection().serverSends('PONG')
+    vi.advanceTimersByTime(10_000)
+    connection().serverSends('PONG')
+    vi.advanceTimersByTime(10_000)
     expect(connection().sent.filter((frame) => frame === 'PING')).toHaveLength(
       3,
     )
@@ -173,13 +192,14 @@ describe('Testing PING', () => {
     expect(ws.sent.filter((frame) => frame === 'PING')).toHaveLength(0)
   })
 
-  test('connects again if asked to subscribe after the connection closed', () => {
+  test('a subscribe made while waiting to reconnect travels in the next first frame', () => {
     const { client, connection, sentJson } = setup()
     client.subscribe(['a'])
     connection().serverAccepts()
     connection().close()
 
     client.subscribe(['b'])
+    vi.advanceTimersByTime(1000)
     connection().serverAccepts()
 
     expect(FakeWebSocket.created).toHaveLength(2)
@@ -187,4 +207,129 @@ describe('Testing PING', () => {
       { assets_ids: ['a', 'b'], type: 'market', initial_dump: true },
     ])
   })
+})
+
+describe('reconnecting', () => {
+  beforeEach(() => {
+    // Jitter would make the delays unpredictable. Pin it to "the full delay".
+    vi.spyOn(Math, 'random').mockReturnValue(1)
+  })
+
+  test('connects again after a drop, with delays that double', () => {
+    const { client, connection } = setup()
+    client.subscribe(['a'])
+    connection().serverAccepts()
+
+    connection().close()
+    expect(client.getStatus()).toBe('reconnecting')
+    vi.advanceTimersByTime(999)
+    expect(FakeWebSocket.created).toHaveLength(1)
+    vi.advanceTimersByTime(1)
+    expect(FakeWebSocket.created).toHaveLength(2)
+
+    connection().close() // the attempt failed
+    vi.advanceTimersByTime(1999)
+    expect(FakeWebSocket.created).toHaveLength(2)
+    vi.advanceTimersByTime(1)
+    expect(FakeWebSocket.created).toHaveLength(3)
+  })
+
+  test('never waits longer than the cap', () => {
+    const { client, connection } = setup()
+    client.subscribe(['a'])
+    connection().serverAccepts()
+
+    for (let i = 0; i < 10; i++) {
+      connection().close()
+      vi.advanceTimersByTime(30_000)
+    }
+
+    expect(FakeWebSocket.created).toHaveLength(11)
+  })
+
+  test('the delay starts small again once a connection has delivered a frame', () => {
+    const { client, connection } = setup()
+    client.subscribe(['a'])
+    connection().serverAccepts()
+    connection().close()
+    vi.advanceTimersByTime(1000)
+    connection().serverAccepts()
+    connection().serverSends('PONG')
+
+    connection().close()
+    vi.advanceTimersByTime(1000)
+
+    expect(FakeWebSocket.created).toHaveLength(3)
+  })
+
+  test('the new connection subscribes to what is wanted now, not then', () => {
+    const { client, connection, sentJson } = setup()
+    client.subscribe(['a'])
+    connection().serverAccepts()
+    connection().close()
+
+    client.unsubscribe(['a'])
+    client.subscribe(['b'])
+    vi.advanceTimersByTime(1000)
+    connection().serverAccepts()
+
+    expect(sentJson()).toEqual([
+      { assets_ids: ['b'], type: 'market', initial_dump: true },
+    ])
+  })
+
+  test('reports a reconnect, but not the first connection', () => {
+    const onReconnect = vi.fn()
+    const client = createMarketSocket({
+      url: 'wss://example.test/ws/market',
+      onFrame: () => {},
+      onReconnect,
+      WebSocketCtor: FakeWebSocket as unknown as typeof WebSocket,
+    })
+    client.subscribe(['a'])
+    FakeWebSocket.created[0]?.serverAccepts()
+    expect(onReconnect).not.toHaveBeenCalled()
+
+    FakeWebSocket.created[0]?.close()
+    vi.advanceTimersByTime(1000)
+    FakeWebSocket.created[1]?.serverAccepts()
+
+    expect(onReconnect).toHaveBeenCalledTimes(1)
+  })
+
+  test('close() means closed: no reconnect follows', () => {
+    const { client, connection } = setup()
+    client.subscribe(['a'])
+    connection().serverAccepts()
+
+    client.close()
+    vi.advanceTimersByTime(60_000)
+
+    expect(client.getStatus()).toBe('idle')
+    expect(FakeWebSocket.created).toHaveLength(1)
+  })
+})
+
+test('retry() connects now instead of waiting out the delay', () => {
+  const { client, connection } = setup()
+  client.subscribe(['a'])
+  connection().serverAccepts()
+  connection().close()
+  vi.advanceTimersByTime(100)
+
+  client.retry()
+
+  expect(FakeWebSocket.created).toHaveLength(2)
+  vi.advanceTimersByTime(60_000)
+  expect(FakeWebSocket.created).toHaveLength(2)
+})
+
+test('retry() does nothing while a connection is open', () => {
+  const { client, connection } = setup()
+  client.subscribe(['a'])
+  connection().serverAccepts()
+
+  client.retry()
+
+  expect(FakeWebSocket.created).toHaveLength(1)
 })

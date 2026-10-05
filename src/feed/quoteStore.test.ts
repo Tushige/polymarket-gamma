@@ -154,3 +154,23 @@ test('tracking a token again does not wipe what it already holds', () => {
 
   expect(store.get('a')).toMatchObject({ bestBid: 0.57 })
 })
+
+test('clear empties every tracked quote and tells their subscribers', () => {
+  const store = createQuoteStore()
+  store.track(['a', 'b', 'c'])
+  store.apply([book('a', 0.57, 0.58), book('b', 0.1, 0.2)])
+  const onA = vi.fn()
+  const onC = vi.fn()
+  store.subscribe('a', onA)
+  store.subscribe('c', onC)
+
+  store.clear()
+
+  expect(store.get('a')).toBe(EMPTY_QUOTE)
+  expect(store.get('b')).toBe(EMPTY_QUOTE)
+  expect(onA).toHaveBeenCalledTimes(1)
+  expect(onC).not.toHaveBeenCalled() // it was empty already
+
+  store.apply([book('a', 0.5, 0.6)]) // still tracked
+  expect(store.get('a')).toMatchObject({ bestBid: 0.5 })
+})

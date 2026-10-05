@@ -2,6 +2,8 @@ import { useState } from 'react'
 import { useGames } from './gamma/useGames'
 import { GamePicker } from './ui/GamePicker'
 import { MarketTable } from './ui/MarketTable'
+import { ConnectionStatus } from './ui/ConnectionStatus'
+import { LiveArea } from './ui/LiveArea'
 
 function App() {
   const { state, retry } = useGames()
@@ -15,6 +17,7 @@ function App() {
       <header className="app-header">
         <h1>NFL Markets</h1>
         <p>Live prices from Polymarket</p>
+        <ConnectionStatus />
       </header>
       <aside className="sidebar">
         {state.status === 'loading' && (
@@ -45,7 +48,9 @@ function App() {
         {selected === null ? (
           <p className="notice">Pick a game to see its markets</p>
         ) : (
-          <MarketTable game={selected} />
+          <LiveArea>
+            <MarketTable game={selected} />
+          </LiveArea>
         )}
       </main>
     </div>

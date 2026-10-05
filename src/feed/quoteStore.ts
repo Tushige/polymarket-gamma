@@ -9,6 +9,8 @@ export interface QuoteStore {
   apply(messages: FeedMessage[]): void
   get(tokenId: string): Quote
   subscribe(tokenId: string, listener: Listener): () => void
+  /** Reset every tracked quote to empty, and tell their subscribers. */
+  clear(): void
 }
 
 export function createQuoteStore(): QuoteStore {
@@ -65,6 +67,13 @@ export function createQuoteStore(): QuoteStore {
         ) {
           listeners.delete(tokenId)
         }
+      }
+    },
+    clear() {
+      for (const [id, quote] of quotes) {
+        if (quote === EMPTY_QUOTE) continue
+        quotes.set(id, EMPTY_QUOTE)
+        notify(id)
       }
     },
   }

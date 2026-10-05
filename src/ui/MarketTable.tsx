@@ -10,11 +10,15 @@ interface MarketTableProps {
 export function MarketTable({ game }: MarketTableProps) {
   const titleId = useId()
   useLiveQuotes(game.rows.map((row) => row.tokenId))
+
   return (
     <div className="market-panel">
       <h2 id={titleId} className="market-title">
         {game.title}
       </h2>
+      {game.status === 'ENDED' && (
+        <p className="table-note">This game has finished.</p>
+      )}
       <div className="table-scroll">
         <table className="markets" aria-labelledby={titleId}>
           <thead>
@@ -34,9 +38,7 @@ export function MarketTable({ game }: MarketTableProps) {
         </table>
       </div>
       {game.inactiveMarketCount > 0 && (
-        <p className="table-note">
-          {game.inactiveMarketCount} O/U lines are listed but not open yet
-        </p>
+        <p className="table-note">{unopenedNote(game.inactiveMarketCount)}</p>
       )}
     </div>
   )
@@ -61,4 +63,9 @@ function QuoteRow({ row }: { row: Row }) {
       />
     </tr>
   )
+}
+
+function unopenedNote(count: number): string {
+  const lines = count === 1 ? 'line is' : 'lines are'
+  return `${count} O/U ${lines} listed but not open for trading yet.`
 }

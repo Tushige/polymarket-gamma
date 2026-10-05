@@ -11,10 +11,12 @@
   --warn: light-dark(#b45309, #f5a524);
 
   /**
- Flash tints 
-*/
+  * Flash tints 
+  */
   --flash-up: light-dark(#c9f2d5, #1f6b3a);
   --flash-down: light-dark(#f3a9a0, #6e1f18);
+  --ok: light-dark(#0a7d38, #4cc774);
+  --warn: light-dark(#b45309, #f5a524);
 
   font-family: system-ui, 'Segoe UI', Roboto, sans-serif;
   font-size: 15px;
@@ -232,4 +234,51 @@ button {
 
 .market-panel .table-note:last-child {
   margin: 0.75rem 0 0;
+}
+
+.connection {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin-left: auto;
+  font-size: 0.85rem;
+}
+
+.connection-dot {
+  width: 0.55rem;
+  height: 0.55rem;
+  border-radius: 50%;
+  background: var(--warn);
+}
+
+.connection[data-status='open'] .connection-dot {
+  background: var(--ok);
+}
+
+.table-note {
+  margin-bottom: 0.75rem;
+  padding: 0.5rem 0.75rem;
+  border-left: 3px solid var(--warn);
+  background: var(--surface);
+  color: var(--muted);
+}
+
+.market-panel .table-note:last-child {
+  margin: 0.75rem 0 0;
+}
+.live-area {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+.live-area[data-stale] .markets td {
+  opacity: 0.45;
+}
+.connection-retry {
+  margin-left: 0.25rem;
+  padding: 0.15rem 0.5rem;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--surface);
+  cursor: pointer;
 }
