@@ -15,7 +15,9 @@ export interface QuoteStore {
   clear(): void
 }
 
-export function createQuoteStore(schedule: Schedule = (flush) => flush()): QuoteStore {
+export function createQuoteStore(
+  schedule: Schedule = (flush) => flush(),
+): QuoteStore {
   const quotes = new Map<string, Quote>()
   const listeners = new Map<string, Set<Listener>>()
 

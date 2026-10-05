@@ -4,7 +4,7 @@ import { Profiler } from 'react'
 import { beforeAll, expect, test, vi } from 'vitest'
 import { quoteStore } from '../feed/live.ts'
 import type { FeedMessage } from '../feed/messages.ts'
-import type { RowSpec } from '../gamma/types.ts'
+import type { Row } from '../gamma/types.ts'
 import { QuoteRow } from './MarketTable.tsx'
 
 beforeAll(() => {
@@ -13,7 +13,7 @@ beforeAll(() => {
   window.matchMedia = vi.fn().mockReturnValue({ matches: false })
 })
 
-const rows: RowSpec[] = [
+const rows: Row[] = [
   { tokenId: 'a', question: 'Q', outcome: 'A' },
   { tokenId: 'b', question: 'Q', outcome: 'B' },
   { tokenId: 'c', question: 'Q', outcome: 'C' },

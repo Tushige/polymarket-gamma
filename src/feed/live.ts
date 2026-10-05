@@ -22,7 +22,7 @@ export function useSocketStatus(): SocketStatus {
 }
 
 /**
- * The one store for the page. Subscribers hear about changes once per animation 
+ * The one store for the page. Subscribers hear about changes once per animation
  * frame: the screen cannot show more than that, and a burst of messages inside
  * one frame becomes one render instead of one render per message.
  */
