@@ -1,6 +1,8 @@
 import { useId } from 'react'
-import type { Game } from '../gamma/types'
-import { useLiveQuotes } from '../feed/live'
+import type { Game, Row } from '../gamma/types'
+import { useLiveQuotes, useQuote } from '../feed/live'
+import { decimalsForTick, spread } from '../utils/format'
+import { PriceCell } from './PriceCell'
 
 interface MarketTableProps {
   game: Game
@@ -26,16 +28,7 @@ export function MarketTable({ game }: MarketTableProps) {
           </thead>
           <tbody>
             {game.rows.map((row) => (
-              <tr key={row.tokenId}>
-                <th scope="row">
-                  <span className="question">{row.question}</span>
-                  <span className="outcome">{row.outcome}</span>
-                </th>
-                <td>-</td>
-                <td>-</td>
-                <td>-</td>
-                <td>-</td>
-              </tr>
+              <QuoteRow key={row.tokenId} row={row} />
             ))}
           </tbody>
         </table>
@@ -46,5 +39,26 @@ export function MarketTable({ game }: MarketTableProps) {
         </p>
       )}
     </div>
+  )
+}
+
+function QuoteRow({ row }: { row: Row }) {
+  const quote = useQuote(row.tokenId)
+  const decimals = decimalsForTick(quote.tickSize)
+
+  return (
+    <tr>
+      <th scope="row">
+        <span className="question">{row.question}</span>
+        <span className="outcome">{row.outcome}</span>
+      </th>
+      <PriceCell value={quote.bestBid} decimals={decimals} />
+      <PriceCell value={quote.bestAsk} decimals={decimals} />
+      <PriceCell value={quote.lastTrade} decimals={decimals} />
+      <PriceCell
+        value={spread(quote.bestBid, quote.bestAsk, decimals)}
+        decimals={decimals}
+      />
+    </tr>
   )
 }
