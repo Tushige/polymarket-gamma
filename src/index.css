@@ -10,6 +10,12 @@
   --accent-soft: light-dark(#e8f0fd, #1c2a44);
   --warn: light-dark(#b45309, #f5a524);
 
+  /**
+ Flash tints 
+*/
+  --flash-up: light-dark(#c9f2d5, #1f6b3a);
+  --flash-down: light-dark(#f3a9a0, #6e1f18);
+
   font-family: system-ui, 'Segoe UI', Roboto, sans-serif;
   font-size: 15px;
   line-height: 1.45;

@@ -16,7 +16,6 @@ const quoteStore = createQuoteStore()
 
 function onFrame(text: string) {
   quoteStore.apply(parseFrame(text))
-  console.log(parseFrame(text))
 }
 
 export function useLiveQuotes(tokenIds: readonly string[]) {
