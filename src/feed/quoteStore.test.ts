@@ -1,0 +1,156 @@
+import { expect, test, vi } from 'vitest'
+import type { FeedMessage } from './messages.ts'
+import { EMPTY_QUOTE } from './quote.ts'
+import { createQuoteStore } from './quoteStore.ts'
+
+const book = (
+  tokenId: string,
+  bestBid: number,
+  bestAsk: number,
+): FeedMessage => ({
+  type: 'book',
+  tokenId,
+  bestBid,
+  bestAsk,
+  lastTrade: null,
+  tickSize: '0.01',
+})
+
+const priceChange = (
+  tokenId: string,
+  bestBid: number,
+  bestAsk: number,
+): FeedMessage => ({ type: 'price_change', tokenId, bestBid, bestAsk })
+
+test('a token with no data has the empty quote', () => {
+  const store = createQuoteStore()
+  store.track(['a'])
+
+  expect(store.get('a')).toBe(EMPTY_QUOTE)
+  expect(store.get('never-heard-of-it')).toBe(EMPTY_QUOTE)
+})
+
+test('applies a message to a tracked token', () => {
+  const store = createQuoteStore()
+  store.track(['a'])
+
+  store.apply([book('a', 0.57, 0.58)])
+
+  expect(store.get('a')).toMatchObject({ bestBid: 0.57, bestAsk: 0.58 })
+})
+
+test('ignores messages for tokens it is not tracking', () => {
+  const store = createQuoteStore()
+  store.track(['a'])
+
+  store.apply([book('b', 0.1, 0.2)])
+
+  expect(store.get('b')).toBe(EMPTY_QUOTE)
+})
+
+test('tells only the listeners of the token that changed', () => {
+  const store = createQuoteStore()
+  store.track(['a', 'b'])
+  const onA = vi.fn()
+  const onB = vi.fn()
+  store.subscribe('a', onA)
+  store.subscribe('b', onB)
+
+  store.apply([book('a', 0.57, 0.58)])
+
+  expect(onA).toHaveBeenCalledTimes(1)
+  expect(onB).not.toHaveBeenCalled()
+})
+
+test('one frame that touches two tokens tells each of them once', () => {
+  const store = createQuoteStore()
+  store.track(['a', 'b'])
+  const onA = vi.fn()
+  const onB = vi.fn()
+  store.subscribe('a', onA)
+  store.subscribe('b', onB)
+
+  store.apply([priceChange('a', 0.39, 0.4), priceChange('b', 0.6, 0.61)])
+
+  expect(onA).toHaveBeenCalledTimes(1)
+  expect(onB).toHaveBeenCalledTimes(1)
+})
+
+test('tells nobody when a message changes nothing', () => {
+  const store = createQuoteStore()
+  store.track(['a'])
+  store.apply([book('a', 0.57, 0.58)])
+  const onA = vi.fn()
+  store.subscribe('a', onA)
+
+  store.apply([priceChange('a', 0.57, 0.58)])
+
+  expect(onA).not.toHaveBeenCalled()
+})
+
+test('returns the same object from get until the quote changes', () => {
+  const store = createQuoteStore()
+  store.track(['a'])
+  store.apply([book('a', 0.57, 0.58)])
+
+  const first = store.get('a')
+  store.apply([priceChange('a', 0.57, 0.58)])
+  expect(store.get('a')).toBe(first)
+
+  store.apply([priceChange('a', 0.56, 0.58)])
+  expect(store.get('a')).not.toBe(first)
+})
+
+test('stops telling a listener once it has unsubscribed', () => {
+  const store = createQuoteStore()
+  store.track(['a'])
+  const onA = vi.fn()
+  const unsubscribe = store.subscribe('a', onA)
+
+  unsubscribe()
+  store.apply([book('a', 0.57, 0.58)])
+
+  expect(onA).not.toHaveBeenCalled()
+})
+
+test('unsubscribing one listener leaves the others in place', () => {
+  const store = createQuoteStore()
+  store.track(['a'])
+  const first = vi.fn()
+  const second = vi.fn()
+  const unsubscribeFirst = store.subscribe('a', first)
+  store.subscribe('a', second)
+
+  unsubscribeFirst()
+  unsubscribeFirst()
+  store.apply([book('a', 0.57, 0.58)])
+
+  expect(first).not.toHaveBeenCalled()
+  expect(second).toHaveBeenCalledTimes(1)
+})
+
+test('forgets a token when it is untracked, and says so', () => {
+  const store = createQuoteStore()
+  store.track(['a'])
+  store.apply([book('a', 0.57, 0.58)])
+  const onA = vi.fn()
+  store.subscribe('a', onA)
+
+  store.untrack(['a'])
+
+  expect(store.get('a')).toBe(EMPTY_QUOTE)
+  expect(onA).toHaveBeenCalledTimes(1)
+
+  store.apply([priceChange('a', 0.5, 0.6)])
+  expect(store.get('a')).toBe(EMPTY_QUOTE)
+})
+
+test('tracking a token again does not wipe what it already holds', () => {
+  const store = createQuoteStore()
+  store.track(['a'])
+  store.apply([book('a', 0.57, 0.58)])
+
+  store.track(['a'])
+
+  expect(store.get('a')).toMatchObject({ bestBid: 0.57 })
+})
