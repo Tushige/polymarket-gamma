@@ -1,6 +1,6 @@
 export type Direction = 'up' | 'down'
 
-/** The brief (W9): the highlight auto-fades after 500 ms. Nothing may extend it. */
+/** The brief asks for a highlight that auto-fades after 500 ms. Nothing may extend it. */
 export const FLASH_MS = 500
 
 export function flashDirection(

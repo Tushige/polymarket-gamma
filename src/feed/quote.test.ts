@@ -12,7 +12,7 @@ const seed: Quote = {
 }
 
 describe('applyMessage: Book', () => {
-  test('prev: EMPTY, message: seed => new quote is seed', () => {
+  test('the first book fills an empty quote', () => {
     const book: FeedMessage = {
       type: 'book',
       tokenId,

@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useSyncExternalStore } from 'react'
+import { moneylineByTeam } from '../gamma/teams'
 import type { Game } from '../gamma/types'
 import { createMarketSocket, type SocketStatus } from './marketSocket'
 import { parseFrame } from './messages'
@@ -6,30 +7,12 @@ import { EMPTY_QUOTE, type Quote } from './quote'
 import { createQuoteStore } from './quoteStore'
 import {
   marketTotal,
-  moneylineByTeam,
   moneylineTokenIds,
   overTokenIds,
   settledLabel,
   settledRange,
   winChance,
 } from './summary'
-
-/**
- * One connection for the page
- */
-const { subscribe, unsubscribe, close, retry, onStatusChange, getStatus } =
-  createMarketSocket({
-    url: 'wss://ws-subscriptions-clob.polymarket.com/ws/market',
-    onFrame,
-    // After a gap, every number on screen must come from the new snapshot.
-    onReconnect: () => quoteStore.clear(),
-  })
-
-export const retryConnection = retry
-
-export function useSocketStatus(): SocketStatus {
-  return useSyncExternalStore(onStatusChange, getStatus)
-}
 
 /**
  * The one store for the page. Subscribers hear about changes once per animation
@@ -40,8 +23,19 @@ export const quoteStore = createQuoteStore((flush) => {
   requestAnimationFrame(flush)
 })
 
-function onFrame(text: string) {
-  quoteStore.apply(parseFrame(text))
+/** One connection for the page. */
+const { subscribe, unsubscribe, close, retry, onStatusChange, getStatus } =
+  createMarketSocket({
+    url: 'wss://ws-subscriptions-clob.polymarket.com/ws/market',
+    onFrame: (text) => quoteStore.apply(parseFrame(text)),
+    // After a gap, every number on screen must come from the new snapshot.
+    onReconnect: () => quoteStore.clear(),
+  })
+
+export const retryConnection = retry
+
+export function useSocketStatus(): SocketStatus {
+  return useSyncExternalStore(onStatusChange, getStatus)
 }
 
 export function useLiveQuotes(tokenIds: readonly string[]) {

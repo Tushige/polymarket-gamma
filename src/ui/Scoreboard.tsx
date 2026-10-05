@@ -6,16 +6,16 @@ import {
   useSettledLabel,
   useWinChancePct,
 } from '../feed/live'
-import { teamsOf, type Team } from '../feed/summary'
+import { teamsOf, type Team, type TeamSide } from '../gamma/teams'
 import type { Game } from '../gamma/types'
 import { kickerLabel, updatedText } from './labels'
 import styles from './Scoreboard.module.css'
 
 function StatusTag({ status }: { status: Game['status'] }) {
   if (status === 'LIVE') return <span className={styles.pill}>Live</span>
-  if (status === 'ENDED')
-    return <span className={`${styles.pill} ${styles.quiet}`}>Final</span>
-  return <span className={`${styles.pill} ${styles.quiet}`}>Pre-game</span>
+  const quiet = `${styles.pill} ${styles.quiet}`
+  if (status === 'ENDED') return <span className={quiet}>Final</span>
+  return <span className={quiet}>Pre-game</span>
 }
 
 function TeamBlock({
@@ -23,7 +23,7 @@ function TeamBlock({
   team,
   pct,
 }: {
-  side: 'away' | 'home'
+  side: TeamSide
   team: Team
   pct: number | null
 }) {
@@ -108,7 +108,6 @@ export function Scoreboard({ game }: { game: Game }) {
         <i style={{ flexGrow: homePct ?? 50 }} />
       </div>
       <div className={styles.bottom}>
-        <span>Moneyline · game winner</span>
         <UpdatedAgo game={game} hasBook={hasBook} />
       </div>
     </section>

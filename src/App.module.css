@@ -2,7 +2,7 @@
    table scroll on their own; min-height: 0 at each level lets them. */
 .desk {
   display: grid;
-  grid-template-columns: 16rem minmax(0, 1fr);
+  grid-template-columns: var(--rail-w) minmax(0, 1fr);
   grid-template-rows: auto minmax(0, 1fr);
   height: 100dvh;
 }

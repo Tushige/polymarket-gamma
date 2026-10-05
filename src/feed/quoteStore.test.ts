@@ -1,7 +1,7 @@
 import { describe, expect, test, vi } from 'vitest'
-import type { FeedMessage } from './messages.ts'
-import { EMPTY_QUOTE } from './quote.ts'
-import { createQuoteStore } from './quoteStore.ts'
+import type { FeedMessage } from './messages'
+import { EMPTY_QUOTE } from './quote'
+import { createQuoteStore } from './quoteStore'
 
 const book = (
   tokenId: string,

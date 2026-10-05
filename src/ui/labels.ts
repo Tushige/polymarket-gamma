@@ -1,4 +1,8 @@
-import type { Game } from '../gamma/types'
+import type { Game, Row } from '../gamma/types'
+
+export function marketLabel(row: Pick<Row, 'line'>): string {
+  return row.line === null ? 'Moneyline' : `O/U ${row.line}`
+}
 
 /** In the viewer's own locale and time zone. */
 const dateTime = new Intl.DateTimeFormat(undefined, {

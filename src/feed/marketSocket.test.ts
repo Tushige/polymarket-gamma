@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest'
-import { createMarketSocket } from './marketSocket.ts'
+import { createMarketSocket } from './marketSocket'
 
 class FakeWebSocket {
   static created: FakeWebSocket[] = []
@@ -89,6 +89,7 @@ test('the first frame is the subscribe message', () => {
     { assets_ids: ['a', 'b'], type: 'market', initial_dump: true },
   ])
 })
+
 test('a subscribe made while waiting to reconnect travels in the next first frame', () => {
   const { client, connection, sentJson } = setup()
   client.subscribe(['a'])
@@ -160,7 +161,7 @@ test('hands every text frame to onFrame exactly as it arrived', () => {
   expect(frames).toEqual(['PONG', '[{"event_type":"book"}]'])
 })
 
-describe('Testing PING', () => {
+describe('keep-alive', () => {
   test('pings every ten seconds, starting after the first frame', () => {
     const { client, connection } = setup()
 

@@ -1,4 +1,5 @@
 export type SocketStatus = 'idle' | 'connecting' | 'open' | 'reconnecting'
+
 export interface MarketSocketOptions {
   url: string
   onFrame: (text: string) => void
@@ -11,20 +12,22 @@ export interface MarketSocketOptions {
 }
 
 export interface MarketSocket {
+  /** Adds to the subscription: subscribed to [a, b], subscribe([c]) nets [a, b, c]. */
   subscribe(tokenIds: readonly string[]): void
   unsubscribe(tokenIds: readonly string[]): void
-  /**
-   * closes the socket for good
-   */
+  /** Closes the socket for good: when the page is torn down, not between remounts. */
   close(): void
   getStatus(): SocketStatus
   onStatusChange(listener: () => void): () => void
   /** Connect now instead of waiting out the reconnect delay. */
   retry(): void
 }
+
 /**
- * The first frame sent must be a subscription. Anything else gets back a 1008
- *
+ * One WebSocket to the market feed that connects on the first subscribe, pings
+ * to stay alive, and reconnects with a doubling, jittered delay after a drop.
+ * The first frame sent on a connection must be a subscription; anything else
+ * is answered with a 1008 close.
  */
 export function createMarketSocket(options: MarketSocketOptions): MarketSocket {
   const {
@@ -107,11 +110,6 @@ export function createMarketSocket(options: MarketSocketOptions): MarketSocket {
   }
 
   return {
-    /**
-     *
-     * @param tokenIds a list of new tokenIds to subscribe to. if we're already subscribed to [a, b], then tokenIds=[c] will net [a, b, c] subscriptions.
-     * @returns void
-     */
     subscribe(tokenIds) {
       if (tokenIds.length === 0) return
       for (const id of tokenIds) assetIds.add(id)
@@ -131,10 +129,6 @@ export function createMarketSocket(options: MarketSocketOptions): MarketSocket {
         send({ operation: 'unsubscribe', assets_ids: tokenIds })
       }
     },
-    /**
-     * can only be called when the page is torn down, not between component remounts.
-     */
-
     close() {
       closedForGood = true
       clearTimeout(reconnectTimer)
@@ -149,7 +143,6 @@ export function createMarketSocket(options: MarketSocketOptions): MarketSocket {
     getStatus() {
       return status
     },
-
     onStatusChange(listener) {
       statusListeners.add(listener)
       return () => {

@@ -80,4 +80,10 @@
   .value {
     min-width: 0;
   }
+
+  /* Hangs left of the number instead of taking width from a narrow column. */
+  .arrow {
+    position: absolute;
+    right: 100%;
+  }
 }

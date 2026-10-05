@@ -8,7 +8,6 @@
   background: var(--surface);
   border: 1px solid var(--rule);
   border-radius: 11px;
-  animation: rise 0.35s var(--ease);
 }
 
 /* Faint yard lines, fading downwards. */
@@ -209,13 +208,6 @@
 
 .mono {
   font-family: var(--font-mono);
-}
-
-@keyframes rise {
-  from {
-    opacity: 0.4;
-    transform: translateY(5px);
-  }
 }
 
 @media (max-width: 760px) {

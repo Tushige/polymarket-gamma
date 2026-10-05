@@ -16,12 +16,7 @@ export const EMPTY_QUOTE = Object.freeze({
 
 const QUOTE_KEYS = Object.keys(EMPTY_QUOTE) as (keyof Quote)[]
 
-/**
- *
- * @param prevQuote - the current quote
- * @param message the message from the feed API
- * @returns the new quote after applying the message
- */
+/** The quote after a message, always as a new object. */
 function nextQuote(prevQuote: Quote, message: FeedMessage): Quote {
   switch (message.type) {
     case 'book':
@@ -49,10 +44,8 @@ function isSame(a: Quote, b: Quote): boolean {
 }
 
 /**
- *
- * @param prevQuote the current quote
- * @param message the message from the feed API
- * @returns the same quote object if applying message didn't result in a change. Otherwise, returns the new updated quote
+ * The quote after a message. The same object comes back when nothing changed,
+ * so a caller can tell a change from a no-op by identity alone.
  */
 export function applyMessage(prevQuote: Quote, message: FeedMessage): Quote {
   const updated = nextQuote(prevQuote, message)

@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'vitest'
-import { decimalsForTick, formatPrice, spread } from './format.ts'
+import { decimalsForTick, formatPrice, spread } from './format'
 
 describe('decimalsForTick', () => {
   test('counts the digits after the point', () => {

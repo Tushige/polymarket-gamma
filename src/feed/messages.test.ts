@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'vitest'
 import frames from './fixtures/frames.json'
-import { parseFrame, toPrice } from './messages.ts'
+import { parseFrame, toPrice } from './messages'
 
 const STEELERS =
   '114452029473938322994940072047457517711080146350796218905893406566691475251935'

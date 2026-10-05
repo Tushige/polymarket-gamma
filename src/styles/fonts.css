@@ -1,4 +1,4 @@
-/* Self-hosted, Latin-subset fonts (OFL), from the Sideline design reference. */
+/* Self-hosted, Latin-subset fonts (OFL): no request leaves the page for them. */
 @font-face {
   font-family: 'DM Sans';
   src: url('../assets/fonts/DMSans-Variable.woff2') format('woff2');

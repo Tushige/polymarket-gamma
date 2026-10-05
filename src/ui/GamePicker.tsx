@@ -1,11 +1,7 @@
-import { useState } from 'react'
-import { matchesTeam, teamsOf } from '../feed/summary'
+import { teamsOf } from '../gamma/teams'
 import { GAME_STATUS_ORDER, type Game, type GameStatus } from '../gamma/types'
-import type { GamesState } from '../gamma/useGames'
-import { startLabel, weeksLabel } from './labels'
 import styles from './GamePicker.module.css'
-import tool from './shared/tool.module.css'
-import { PickerSkeleton } from './Skeleton'
+import { startLabel } from './labels'
 
 interface GamePickerProps {
   games: Game[]
@@ -19,8 +15,8 @@ interface GameCategory {
 }
 
 /**
- * Given games in the future, we split them by weeks so we can display week 4
- * games together and week 5 games together
+ * Upcoming games grouped by week, so week 4's games sit together and week 5's
+ * after them. Games without a week go in one "Upcoming" group at the end.
  */
 function splitGamesIntoWeeks(games: Game[]) {
   const byWeeks = new Map<number, Game[]>()
@@ -45,9 +41,7 @@ function splitGamesIntoWeeks(games: Game[]) {
   return upcomingGames
 }
 
-/**
- * Takes a list of games and splits into sections
- */
+/** The list's sections: live games, then each upcoming week, then the ended ones. */
 function splitGamesIntoCategories(games: Game[]): GameCategory[] {
   const byStatus: Record<GameStatus, Game[]> = {
     LIVE: [],
@@ -102,6 +96,7 @@ function GameButton({
   )
 }
 
+/** The games, in sections, one button each. */
 export function GamePicker({ games, selectedId, onSelect }: GamePickerProps) {
   return (
     <nav className={styles.picker} aria-label="Games">
@@ -122,114 +117,5 @@ export function GamePicker({ games, selectedId, onSelect }: GamePickerProps) {
         </section>
       ))}
     </nav>
-  )
-}
-
-function SlateFooter({ games }: { games: Game[] }) {
-  const markets = games.reduce((sum, game) => sum + game.rows.length / 2, 0)
-  const weeks = weeksLabel(
-    games
-      .map((game) => game.eventWeek)
-      .filter((week): week is number => week !== null),
-  )
-  return (
-    <div className={styles.footer}>
-      <b>The slate</b>
-      {games.length} games · {markets} markets
-      <br />
-      NFL{weeks === '' ? '' : ` · ${weeks}`}
-    </div>
-  )
-}
-
-interface RailProps {
-  state: GamesState
-  retry: () => void
-  selectedId: string | null
-  onSelect: (id: string) => void
-}
-
-function TeamSearch({
-  query,
-  onChange,
-}: {
-  query: string
-  onChange: (query: string) => void
-}) {
-  return (
-    <div className={styles.search}>
-      <input
-        id="team-search"
-        type="search"
-        aria-label="Find a team"
-        placeholder="Team or city"
-        autoComplete="off"
-        spellCheck={false}
-        value={query}
-        onChange={(event) => onChange(event.target.value)}
-        onKeyDown={(event) => {
-          if (event.key === 'Escape') onChange('')
-        }}
-      />
-    </div>
-  )
-}
-
-/**
- * The left column in every state of the games request. The search only
- * narrows the list: the game being watched stays on the board.
- */
-export function Rail({ state, retry, selectedId, onSelect }: RailProps) {
-  const [query, setQuery] = useState('')
-
-  if (state.status === 'loading') {
-    return <PickerSkeleton eventsCount={state.eventsCount} />
-  }
-  if (state.status === 'error') {
-    return (
-      <div className={styles.notice} role="alert">
-        <b>Couldn’t load the games.</b>
-        <span className={styles.reason}>{state.message}</span>
-        <button type="button" className={styles.noticeButton} onClick={retry}>
-          Try again
-        </button>
-      </div>
-    )
-  }
-  if (state.games.length === 0) {
-    return (
-      <div className={styles.notice}>
-        <b>No NFL games are listed right now.</b>
-        <p>Games appear here as soon as Polymarket lists them.</p>
-        <button type="button" className={styles.noticeButton} onClick={retry}>
-          Check again
-        </button>
-      </div>
-    )
-  }
-  const matching = state.games.filter((game) => matchesTeam(game, query))
-  return (
-    <>
-      <TeamSearch query={query} onChange={setQuery} />
-      {matching.length === 0 ? (
-        <div className={styles.empty} role="status">
-          <p>No games match “{query.trim()}”.</p>
-          <button
-            type="button"
-            className={tool.button}
-            onClick={() => setQuery('')}
-          >
-            Clear
-          </button>
-        </div>
-      ) : (
-        <GamePicker
-          games={matching}
-          selectedId={selectedId}
-          onSelect={onSelect}
-        />
-      )}
-      <SlateFooter games={state.games} />
-    </>
   )
 }

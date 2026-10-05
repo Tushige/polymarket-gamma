@@ -3,25 +3,27 @@ import { GAME_STATUS_ORDER, type Game } from './types'
 
 const MAX_PAGES = 50
 
+/** Games without a start time sort last among their status. */
 function getStartTimeOrInfinity(game: Game): number {
   return game.startTime === null ? Infinity : Date.parse(game.startTime)
 }
+
+/** Live games first, then upcoming, then ended; by kickoff within each. */
 function sortByStatusThenStartTime(a: Game, b: Game) {
   const diff =
     GAME_STATUS_ORDER.indexOf(a.status) - GAME_STATUS_ORDER.indexOf(b.status)
   if (diff !== 0) return diff
-  // use startTime as tie breaker
   const aStartTime = getStartTimeOrInfinity(a)
   const bStartTime = getStartTimeOrInfinity(b)
-  // handles the case where both times are Infinity
+  // Compared, not subtracted: Infinity - Infinity is NaN.
   if (aStartTime === bStartTime) return 0
-  // return aStartTime - bStartTime
   return aStartTime < bStartTime ? -1 : 1
 }
 
 function pageUrl(offset: number) {
   return `https://gamma-api.polymarket.com/events?tag_slug=nfl&active=true&closed=false&limit=100&offset=${offset}`
 }
+
 export interface FetchGameOptions {
   fetchFn?: typeof fetch
   signal?: AbortSignal
@@ -29,7 +31,9 @@ export interface FetchGameOptions {
 }
 
 /**
- * walks every page of the NFL events and returns the ones that are games
+ * Walks every page of Gamma's NFL events and returns the ones that are games,
+ * sorted for the list. Pages advance by what arrived, and the walk stops at
+ * the first empty page.
  */
 export async function fetchGames(
   options: FetchGameOptions = {},

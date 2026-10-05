@@ -1,17 +1,18 @@
 // @vitest-environment happy-dom
-import { act, render, within } from '@testing-library/react'
+import { cleanup, render, within } from '@testing-library/react'
 import { Profiler } from 'react'
-import { beforeAll, expect, test, vi } from 'vitest'
-import { quoteStore } from '../feed/live.ts'
-import type { FeedMessage } from '../feed/messages.ts'
-import type { Row } from '../gamma/types.ts'
-import { QuoteRow } from './MarketTable.tsx'
+import { afterEach, beforeAll, expect, test } from 'vitest'
+import { quoteStore } from '../feed/live'
+import type { FeedMessage } from '../feed/messages'
+import type { Row } from '../gamma/types'
+import { nextFrame, stubElementAnimate } from '../test/dom'
+import { QuoteRow } from './MarketTable'
 
-beforeAll(() => {
-  // Test DOMs do not implement element.animate, which the flash uses.
-  Element.prototype.animate = vi.fn(
-    () => ({ cancel: () => {} }) as unknown as Animation,
-  )
+beforeAll(stubElementAnimate)
+
+afterEach(() => {
+  cleanup()
+  quoteStore.clear()
 })
 
 const rows: Row[] = [
@@ -28,15 +29,6 @@ const book = (tokenId: string, bestBid: number): FeedMessage => ({
   lastTrade: null,
   tickSize: '0.01',
 })
-
-/** Lets the store's animation-frame flush run. */
-async function nextFrame() {
-  await act(async () => {
-    await new Promise<void>((resolve) => {
-      requestAnimationFrame(() => resolve())
-    })
-  })
-}
 
 test('a message for one token re-renders that row and no other', async () => {
   const renders: Record<string, number> = {}

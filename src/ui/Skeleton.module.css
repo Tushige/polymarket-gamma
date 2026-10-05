@@ -1,3 +1,10 @@
+/* The placeholders and notices rise in as they appear (the live board does the
+   same once, in LiveArea). */
+.enter {
+  composes: rise from './shared/motion.module.css';
+  animation-duration: 0.35s;
+}
+
 /* A placeholder block with a slow, low-contrast shimmer. */
 .block {
   position: relative;

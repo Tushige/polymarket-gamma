@@ -1,10 +1,11 @@
 .panel {
+  composes: rise from './shared/motion.module.css';
   display: flex;
   flex: 1;
   flex-direction: column;
   min-height: 0;
   max-width: var(--content-max);
-  animation: rise 0.23s var(--ease);
+  animation-duration: 0.23s;
 }
 
 .head {
@@ -164,7 +165,7 @@
 }
 
 /* A small bar in the team's colour next to each moneyline outcome. */
-.dot {
+.bar {
   display: inline-block;
   width: 3px;
   height: 13px;
@@ -174,11 +175,11 @@
   vertical-align: -2px;
 }
 
-.teamA {
+.away {
   background: var(--team-a);
 }
 
-.teamB {
+.home {
   background: var(--team-b);
 }
 
@@ -195,13 +196,6 @@
   padding: 1rem 0;
   font-size: 12px;
   color: var(--muted);
-}
-
-@keyframes rise {
-  from {
-    opacity: 0.4;
-    transform: translateY(5px);
-  }
 }
 
 @media (max-width: 760px) {
@@ -230,7 +224,7 @@
     vertical-align: bottom;
   }
 
-  /* The full question stays on screen at every width: the brief's T2. */
+  /* The full question stays on screen at every width. */
   .label small {
     font-size: 9px;
   }

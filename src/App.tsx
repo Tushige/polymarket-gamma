@@ -3,7 +3,7 @@ import styles from './App.module.css'
 import type { Game } from './gamma/types'
 import { useGames } from './gamma/useGames'
 import { Board } from './ui/Board'
-import { Rail } from './ui/GamePicker'
+import { Rail } from './ui/Rail'
 import { StatusPill } from './ui/StatusPill'
 import { ThemeToggle } from './ui/ThemeToggle'
 

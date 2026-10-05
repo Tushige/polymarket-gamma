@@ -1,3 +1,4 @@
+/** One outcome of one market: a row of the table and a token on the feed. */
 export interface Row {
   tokenId: string
   outcome: string
@@ -5,6 +6,7 @@ export interface Row {
   /** null for the moneyline; the O/U number for a full-game total. */
   line: number | null
 }
+
 /**
  * Every status a game can have, in the order games are listed: being played,
  * then upcoming, then finished. The type is derived from this list, so adding a
@@ -29,8 +31,11 @@ export interface Game {
   id: string
   slug: string
   title: string
+  /** Every row's token, in row order: what the feed is asked for. */
   tokenIds: string[]
+  /** The moneyline's two rows first, then each total line's, lowest line first. */
   rows: Row[]
+  /** In-scope markets Gamma lists without tokens: not open for trading yet. */
   inactiveMarketCount: number
   startTime: string | null
   status: GameStatus

@@ -1,13 +1,19 @@
 import { describe, expect, test } from 'vitest'
 import {
   kickerLabel,
+  marketLabel,
   startLabel,
   unopenedNote,
   updatedText,
   weeksLabel,
-} from './labels.ts'
+} from './labels'
 
 const START = '2026-10-02T00:15:00Z'
+
+test('marketLabel names the market briefly', () => {
+  expect(marketLabel({ line: null })).toBe('Moneyline')
+  expect(marketLabel({ line: 41.5 })).toBe('O/U 41.5')
+})
 
 describe('startLabel', () => {
   test('words the start time for the game status', () => {

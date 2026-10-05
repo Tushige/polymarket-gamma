@@ -49,7 +49,7 @@ function SkeletonTeam({ home = false }: { home?: boolean }) {
 /** The scoreboard's shape, with one line of text underneath. */
 export function ScoreboardSkeleton({ note }: { note: string }) {
   return (
-    <div className={board.card} aria-hidden="true">
+    <div className={`${board.card} ${styles.enter}`} aria-hidden="true">
       <div className={board.top}>
         <span className={block(styles.kicker)} />
         <span className={block(styles.pill)} />
@@ -73,7 +73,7 @@ export function ScoreboardSkeleton({ note }: { note: string }) {
 /** Six table rows' worth of shapes, in the table's own layout. */
 export function TableSkeleton() {
   return (
-    <div className={table.panel} aria-hidden="true">
+    <div className={`${table.panel} ${styles.enter}`} aria-hidden="true">
       <div className={table.head}>
         <span className={block(styles.title)} />
       </div>
@@ -116,7 +116,7 @@ export function BoardNotice({
   children: ReactNode
 }) {
   return (
-    <section className={board.card}>
+    <section className={`${board.card} ${styles.enter}`}>
       <div className={styles.notice}>
         <h2>{title}</h2>
         <p>{children}</p>

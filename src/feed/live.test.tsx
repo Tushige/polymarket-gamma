@@ -1,14 +1,10 @@
 // @vitest-environment happy-dom
-import { act, renderHook } from '@testing-library/react'
-import { expect, test } from 'vitest'
-import type { Game, Row } from '../gamma/types.ts'
-import {
-  quoteStore,
-  useHasBook,
-  useMarketTotal,
-  useWinChancePct,
-} from './live.ts'
-import type { FeedMessage } from './messages.ts'
+import { cleanup, renderHook } from '@testing-library/react'
+import { afterEach, expect, test } from 'vitest'
+import type { Game, Row } from '../gamma/types'
+import { nextFrame } from '../test/dom'
+import { quoteStore, useHasBook, useMarketTotal, useWinChancePct } from './live'
+import type { FeedMessage } from './messages'
 
 const rows: Row[] = [
   { tokenId: 'ml-a', question: 'A vs. B', outcome: 'A', line: null },
@@ -65,14 +61,11 @@ const book = (
   tickSize: '0.01',
 })
 
-/** Lets the store's animation-frame flush run. */
-async function nextFrame() {
-  await act(async () => {
-    await new Promise<void>((resolve) => {
-      requestAnimationFrame(() => resolve())
-    })
-  })
-}
+// The store is the page's singleton: unmount the hooks and empty it between tests.
+afterEach(() => {
+  cleanup()
+  quoteStore.clear()
+})
 
 test('useMarketTotal re-renders only when the nearest-to-even line changes', async () => {
   quoteStore.track(game.tokenIds)

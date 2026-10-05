@@ -1,5 +1,5 @@
-import type { FeedMessage } from './messages.ts'
-import { applyMessage, EMPTY_QUOTE, type Quote } from './quote.ts'
+import type { FeedMessage } from './messages'
+import { applyMessage, EMPTY_QUOTE, type Quote } from './quote'
 
 export type Schedule = (flush: () => void) => void
 
@@ -88,11 +88,11 @@ export function createQuoteStore(
       tokenListeners.add(listener)
 
       return () => {
-        // cleanup func
         tokenListeners.delete(listener)
+        // The identity check keeps a stale cleanup from deleting newer listeners.
         if (
           tokenListeners.size === 0 &&
-          listeners.get(tokenId) === tokenListeners // this check ensures that a stale cleanup will not delete newer listeners.
+          listeners.get(tokenId) === tokenListeners
         ) {
           listeners.delete(tokenId)
         }

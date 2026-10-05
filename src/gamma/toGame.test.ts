@@ -1,12 +1,26 @@
 import { describe, expect, test } from 'vitest'
 import events from './fixtures/events.sample.json'
-import { toGame } from './toGame'
+import { cityOf, toGame } from './toGame'
 
 function event(slug: string) {
   const found = events.find((candidate) => candidate.slug === slug)
   if (!found) throw new Error(`the fixture has no event ${slug}`)
   return found
 }
+
+describe('cityOf', () => {
+  test('is the full name without the short name', () => {
+    expect(cityOf('Houston Texans', 'Texans')).toBe('Houston')
+    expect(cityOf('Los Angeles Rams', 'Rams')).toBe('Los Angeles')
+    expect(cityOf('San Francisco 49ers', '49ers')).toBe('San Francisco')
+    expect(cityOf('New York Giants', 'Giants')).toBe('New York')
+  })
+
+  test('is empty when the short name is not the end of the full name', () => {
+    expect(cityOf('Washington Commanders', 'Commies')).toBe('')
+    expect(cityOf('Texans', 'Texans')).toBe('')
+  })
+})
 
 describe('toGame', () => {
   test('is null for events that are not games', () => {
@@ -35,7 +49,7 @@ describe('toGame', () => {
     })
   })
 
-  test('steelers vs browns have 2 rows', () => {
+  test('the moneyline gives two rows, one per outcome, each with its own token', () => {
     const game = toGame(event('nfl-pit-cle-2026-10-02'))
     expect(game).not.toBeNull()
     expect(game?.rows![0]).toMatchObject({
@@ -52,7 +66,7 @@ describe('toGame', () => {
     })
   })
 
-  test('game rows display moneyline first followed by totalLine sorted by line in asc', () => {
+  test('lists the moneyline first, then every total line in ascending order', () => {
     const game = toGame(event('nfl-pit-cle-2026-10-02'))
     const labels = game?.rows.map((row) => `${row.question} | ${row.outcome}`)
     expect(labels).toEqual([
@@ -71,11 +85,11 @@ describe('toGame', () => {
     ])
   })
 
-  test('a game with only moneyline markets contain rows of only moneyline', () => {
+  test('a game with only a moneyline has just those two rows', () => {
     expect(toGame(event('nfl-ne-chi-2026-10-23'))?.rows).toHaveLength(2)
   })
 
-  test('a missing markets field produces an empty rows', () => {
+  test('has no rows when the markets field is missing or malformed', () => {
     const raw = { ...event('nfl-ne-chi-2026-10-23'), markets: 'none' }
     expect(toGame(raw)?.rows).toEqual([])
   })

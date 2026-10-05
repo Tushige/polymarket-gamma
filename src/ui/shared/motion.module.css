@@ -1,0 +1,13 @@
+/* How a panel arrives: a short lift and fade. Each use sets its own
+   animation-duration. */
+.rise {
+  animation-name: rise;
+  animation-timing-function: var(--ease);
+}
+
+@keyframes rise {
+  from {
+    opacity: 0.4;
+    transform: translateY(5px);
+  }
+}

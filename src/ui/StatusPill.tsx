@@ -1,7 +1,7 @@
 import { retryConnection, useHasBook, useSocketStatus } from '../feed/live'
-import { statusLabel } from '../feed/summary'
 import type { Game } from '../gamma/types'
 import type { GamesState } from '../gamma/useGames'
+import { statusLabel } from './statusLabel'
 import styles from './StatusPill.module.css'
 
 const NO_TOKENS: readonly string[] = []

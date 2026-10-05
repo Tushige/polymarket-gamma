@@ -8,6 +8,7 @@ type LineGroup = {
   line: number
   rows: Row[]
 }
+
 function getStatus(event: Record<string, unknown>): GameStatus {
   if (event.ended === true) return 'ENDED'
   if (event.live === true) return 'LIVE'
@@ -109,13 +110,9 @@ function collectRows(
 }
 
 /**
- *
- * @param event
- * @returns a Game object if the event is a game, null otherwise
- * An event is a game if
- * 1. event is an object
- * 2. id, title, slug fields are strings
- * 3. the slug is of the GAME_SLUG form
+ * A Game from one Gamma event, or null when the event is not a game: not an
+ * object, missing a string id, title or slug, or a slug that is not of the
+ * GAME_SLUG form (team codes and a kickoff date, nothing after).
  */
 export function toGame(event: unknown): Game | null {
   if (!isRecord(event)) return null
@@ -124,8 +121,9 @@ export function toGame(event: unknown): Game | null {
     typeof id !== 'string' ||
     typeof slug !== 'string' ||
     typeof title !== 'string'
-  )
+  ) {
     return null
+  }
   if (!GAME_SLUG.test(slug)) return null
   const game: Game = {
     id,

@@ -1,7 +1,7 @@
 import { expect, test } from 'vitest'
 import events from './fixtures/events.sample.json'
-import { fetchGames } from './fetchGames.ts'
-import { GAME_SLUG } from './toGame.ts'
+import { fetchGames } from './fetchGames'
+import { GAME_SLUG } from './toGame'
 
 /**
  * small stand-in for the gamma API to be used for testing

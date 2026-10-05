@@ -1,5 +1,5 @@
 import { expect, test, vi } from 'vitest'
-import { flash, FLASH_MS, flashDirection } from './flash.ts'
+import { flash, FLASH_MS, flashDirection } from './flash'
 
 function stubChip() {
   const cancels: (() => void)[] = []
@@ -19,7 +19,7 @@ function stubChip() {
   return { chip, animate, cancels }
 }
 
-test('W9: the highlight lasts 500 ms in total and ends transparent', () => {
+test('the highlight lasts 500 ms in total and ends transparent', () => {
   const { chip, animate } = stubChip()
 
   flash(chip, 'up')

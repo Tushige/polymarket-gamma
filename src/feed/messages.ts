@@ -119,6 +119,7 @@ function createFeedMessageFromLastTrade(item: FrameItem): FeedMessage[] {
     },
   ]
 }
+
 function createFeedMessageFromTickSizeChange(item: FrameItem): FeedMessage[] {
   const tickSize = toTickSize(item.new_tick_size)
   if (typeof item.asset_id !== 'string' || tickSize === null) return []
@@ -146,19 +147,16 @@ function toFeedMessage(item: unknown): FeedMessage[] {
       return []
   }
 }
+
 /**
- * @param frameText an Array or an Object
- * After the first subscription, the API sends an array of event_type: 'book'
- * Subsequent frames send deltas i.e. one object
+ * The messages in one frame of text from the feed. After a subscription the
+ * feed sends an array of `book` snapshots, one per token; after that each
+ * frame is a single object. Anything unparseable or unknown gives nothing.
  */
 export function parseFrame(frameText: string): FeedMessage[] {
   try {
     const frame = JSON.parse(frameText)
-
     const frameItems: unknown[] = Array.isArray(frame) ? frame : [frame]
-    /**
-     * convert each item into a FeedMessage object and flatten everything into one list of FeedMessage
-     */
     return frameItems.flatMap(toFeedMessage)
   } catch {
     return []
@@ -166,9 +164,8 @@ export function parseFrame(frameText: string): FeedMessage[] {
 }
 
 /**
- * Takes a val and produces a price in the range of (0, 1)
- * invalid prices produce null
- * If the feed API says "no price" i.e. "", "0", or "1", then null is returned
+ * A price from the feed, which sends numbers as strings: a number strictly
+ * between 0 and 1. "No price" ("", "0" or "1") and anything else give null.
  */
 export function toPrice(val: unknown): number | null {
   if (typeof val !== 'string') return null

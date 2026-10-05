@@ -2,9 +2,9 @@
 import { cleanup, render, screen } from '@testing-library/react'
 import { afterEach, expect, test } from 'vitest'
 import events from '../gamma/fixtures/events.sample.json'
-import { toGame } from '../gamma/toGame.ts'
-import type { Game } from '../gamma/types.ts'
-import { Scoreboard } from './Scoreboard.tsx'
+import { toGame } from '../gamma/toGame'
+import type { Game } from '../gamma/types'
+import { Scoreboard } from './Scoreboard'
 
 afterEach(cleanup)
 

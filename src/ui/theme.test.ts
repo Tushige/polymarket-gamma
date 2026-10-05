@@ -1,5 +1,5 @@
 ﻿import { expect, test } from 'vitest'
-import { readStoredTheme, resolveTheme } from './theme.ts'
+import { readStoredTheme, resolveTheme } from './theme'
 
 test('a stored choice wins; otherwise the OS decides', () => {
   expect(resolveTheme('light', true)).toBe('light')

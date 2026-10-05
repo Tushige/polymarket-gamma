@@ -1,16 +1,15 @@
 import { memo, useState } from 'react'
 import { useLiveQuotes, useMarketTotal, useQuote } from '../feed/live'
-import {
-  groupByMarket,
-  marketLabel,
-  rowsForFilter,
-  teamSide,
-  teamsOf,
-  type MarketFilter,
-} from '../feed/summary'
+import { teamSide, teamsOf, type TeamSide } from '../gamma/teams'
 import type { Game, Row } from '../gamma/types'
 import { decimalsForTick, spread } from '../utils/format'
-import { unopenedNote } from './labels'
+import { marketLabel, unopenedNote } from './labels'
+import {
+  groupByMarket,
+  marketCount,
+  rowsForFilter,
+  type MarketFilter,
+} from './marketRows'
 import styles from './MarketTable.module.css'
 import { PriceCell } from './PriceCell'
 
@@ -37,7 +36,7 @@ export function MarketTable({ game }: { game: Game }) {
       <div className={styles.head}>
         <h2>
           Game markets{' '}
-          <span className={styles.count}>{game.rows.length / 2}</span>
+          <span className={styles.count}>{marketCount(game.rows)}</span>
         </h2>
         <div className={styles.segments} role="group" aria-label="Show">
           {FILTERS.map((option) => (
@@ -106,8 +105,8 @@ interface QuoteRowProps {
   /** The first row of a market carries the market cell. */
   showMarket?: boolean
   rowSpan?: number
-  /** Which team a moneyline outcome belongs to, for its colour dot. */
-  side?: 'a' | 'b' | null
+  /** Which team a moneyline outcome belongs to, for its colour bar. */
+  side?: TeamSide | null
 }
 
 /** One outcome. Re-renders when its own token's quote changes, and only then. */
@@ -133,9 +132,7 @@ export const QuoteRow = memo(function QuoteRow({
       <th scope="row" className={styles.outcomeCell}>
         <span
           className={
-            side === null
-              ? styles.dot
-              : `${styles.dot} ${side === 'a' ? styles.teamA : styles.teamB}`
+            side === null ? styles.bar : `${styles.bar} ${styles[side]}`
           }
           aria-hidden="true"
         />
